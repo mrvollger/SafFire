@@ -219,7 +219,7 @@ function miropeats_d3(aln_data){
             .attr('transform', `translate(0, ${margin.top-10})`)
             .call(d3.axisTop(x).ticks(6));
 
-        const gx = container.append("g")
+        container.append("g")
             .call(xAxis, xz);
 
         // draw the y axis 

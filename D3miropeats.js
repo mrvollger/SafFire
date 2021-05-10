@@ -1,4 +1,4 @@
-var margin = {top: 40, right: 40, bottom: 40, left: 80};
+var margin = {top: 40, right: 10, bottom: 40, left: 10};
 
 var aln_data = [
           {c1_nm: "Chr 1", c1_st: 0, c1_en: 100, c2_nm: "Chr 2", c2_st: 20, c2_en: 120, id: 90, strand: "+"},
@@ -68,8 +68,7 @@ function miropeats_d3(aln_data){
         .append("svg")
         .attr("width", "100%")
         //.attr("height", "100%")
-        .attr("viewBox", `0 0 ${width} ${height}`); // top, left, width, down
-
+        .attr("viewBox", `0 0 ${width} ${height}`) // top, left, width, down
     
     // xscale inital x scale
     const xscale = d3.scaleLinear()
@@ -121,8 +120,8 @@ function miropeats_d3(aln_data){
         c2_st = xz(o_c2_st), c2_en = xz(o_c2_en);
         
         const path = d3.path(),
-        c1_h = yscale_d(c1_nm),//+yscale_d.bandwidth(),
-        c2_h = yscale_d(c2_nm), //yscale_d(c2_nm),
+        c1_h = yscale_d(c1_nm) + 5,//+yscale_d.bandwidth(),
+        c2_h = yscale_d(c2_nm) - 5, //yscale_d(c2_nm),
         mid = (c1_h + c2_h) / 2; //yscale((c1_h+c2_h)/2);
         
         // forward color
@@ -222,25 +221,28 @@ function miropeats_d3(aln_data){
         container.append("g")
             .call(xAxis, xz);
 
-        // draw the y axis 
+        /*
+        var xmin = xz(d3.min(aln_data, function(d) { return d3.min([d.c1_st,d.c2_st]) }));
+        var xmax = xz(d3.max(aln_data, function(d) { return d3.max([d.c1_en,d.c2_en]) }));
+        // add contig lines 
+        var n = ct_names[1]
+        container.append("line")
+                .attr("x1", 0).attr("y1",yscale_d(n))
+                .attr("x2", xmax).attr("y2",yscale_d(n))
+                .attr("stroke", "gray")  
+                .attr("stroke-width",1);
+        */
+
+        // draw the y axis
         container.append('g')
-            .attr('transform', `translate(${margin.left}, 0)`)
-            .call(d3.axisLeft(yscale_d));
+            .attr('transform', `translate(0, 0)`)
+            .attr("opacity", 1)
+            .attr("fill", "black")
+            .call(d3.axisRight(yscale_d));
+        
     };
     draw_x_and_y_scale();
     
-    // clipping things outside? only usable in observabel?
-    /*
-    const clip = DOM.uid("clip");
-        .attr("id", clip.id)
-    const clip = container.append("clipPath")
-      .append("rect")
-        .attr("x", margin.left)
-        .attr("y", margin.top)
-        .attr("width", width - margin.left - margin.right)
-        .attr("height", height - margin.top - margin.bottom);
-        .attr("clip-path", clip)
-    */
     
     // add in the data 
     function draw_data(xz){
@@ -263,6 +265,7 @@ function miropeats_d3(aln_data){
         //xz = update(xz); //update global scale?
         console.log("xz: "+xz(100));
         console.log("x:  "+xscale(100));
+        console.log("max_min\t"+ xz[0]+", " + xz[1]);
         d3.selectAll("svg > *").remove();
         draw_data(xz)
         draw_x_and_y_scale();

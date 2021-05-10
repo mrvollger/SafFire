@@ -1,10 +1,11 @@
 var margin = {top: 40, right: 10, bottom: 40, left: 10};
 
-var aln_data = [
+var l_aln_data = [
           {c1_nm: "Chr 1", c1_st: 0, c1_en: 100, c2_nm: "Chr 2", c2_st: 20, c2_en: 120, id: 90, strand: "+"},
           {c1_nm: "Chr 1", c1_st: 100, c1_en: 300, c2_nm: "Chr 2", c2_st: 120, c2_en: 320, id: 50, strand: "-"},
           {c1_nm: "Chr 1", c1_st: 300, c1_en: 400, c2_nm: "Chr 2", c2_st: 320, c2_en: 420, id: 20, strand: "+"},
           {c1_nm: "Chr 1", c1_st: 400, c1_en: 450, c2_nm: "Chr 2", c2_st: 0, c2_en: 50, id: 100, strand: "-"},
+          {c1_nm: "Chr 1", c1_st: 400, c1_en: 450, c2_nm: "Chr 3", c2_st: 0, c2_en: 50, id: 100, strand: "-"},
       ];
 
 // load dataset and create table
@@ -52,16 +53,47 @@ function upload_button(el, callback) {
     };
 };
 
+var queryButton = d3.select("#queryButton");
+var targetButton = d3.select("#targetButton");
 
-function miropeats_d3(aln_data){
+function miropeats_d3(l_aln_data){
 
     //var ct_names = d3.set(aln_data, function(d){return d.c2_nm;});
-    var t_names = [...new Set(aln_data.map(d => d.c1_nm))];
-    var q_names = [...new Set(aln_data.map(d => d.c2_nm))];
-    var ct_names = q_names.reverse().concat(t_names);
-    console.log(ct_names);
+    var t_names = [...new Set(l_aln_data.map(d => d.c1_nm))];
+    var q_names = [...new Set(l_aln_data.map(d => d.c2_nm))];
+    
+    targetButton.selectAll('myOptions').exit()
+    // add the options to the button
+    //d3.select("#targetButton")
+    targetButton
+        .selectAll('myOptions')
+        .data(t_names)
+        .enter()
+        .append('option')
+        .text(function (d) { return d; }) // text showed in the menu
+        .attr("value", function (d) { return d; }) // corresponding value returned by the button
+    var sel = document.getElementById('targetButton');
+    var t_name = sel.options[sel.selectedIndex].value
 
-    //
+    // add the options to the button
+    queryButton
+        .selectAll('myOptions')
+        .data(q_names)
+        .enter()
+        .append('option')
+        .text(function (d) { return d; }) // text showed in the menu
+        .attr("value", function (d) { return d; }) // corresponding value returned by the button
+    var sel = document.getElementById('queryButton');
+    var q_name = sel.options[sel.selectedIndex].value
+    console.log("q_name:"+q_name+" t_name:"+t_name );
+
+    var ct_names = [q_name, t_name];
+    console.log(ct_names);
+    
+    var aln_data = l_aln_data.filter(function (e) {
+        return e.c1_nm == t_name && e.c2_nm == q_name;
+    });
+    
     var height=100 * (ct_names.length);//*d3.set(ct_names).size();
     var width=800;
     var container = d3.select("#chart")
@@ -79,7 +111,7 @@ function miropeats_d3(aln_data){
     var xz = xscale;
     // yscale
     var yscale_d = d3.scaleBand()
-            .domain(ct_names)
+            .domain([q_name, t_name])
             .range([height - margin.bottom, margin.top])
             .paddingInner(1)
             .align(0);
@@ -114,7 +146,7 @@ function miropeats_d3(aln_data){
     function help_draw_alignment(c1_nm, o_c1_st, o_c1_en, c2_nm,
          o_c2_st, o_c2_en,
          perid, strand) {
-        console.log("inner xz: "+xz(100));
+        //console.log("inner xz: "+xz(100));
 
         var c1_st = xz(o_c1_st), c1_en = xz(o_c1_en),
         c2_st = xz(o_c2_st), c2_en = xz(o_c2_en);
@@ -133,9 +165,7 @@ function miropeats_d3(aln_data){
             var color = "#3282b8";
         };
         // color alpha on identity 
-        console.log(perid);
         var opacity = alpha_scale(perid);
-        console.log(opacity);
 
         // connect c1 start and end
         path.moveTo(c1_st, c1_h);
@@ -257,13 +287,35 @@ function miropeats_d3(aln_data){
     function zoomed(event) {
         xz = event.transform.rescaleX(xscale);
         //xz = update(xz); //update global scale?
-        console.log("xz: "+xz(100));
-        console.log("x:  "+xscale(100));
-        console.log("max_min\t"+ xz[0]+", " + xz[1]);
+        //console.log("xz: "+xz(100));
+        //console.log("x:  "+xscale(100));
+        //console.log("max_min\t"+ xz[0]+", " + xz[1]);
         d3.selectAll("svg > *").remove();
         draw_data(xz)
         draw_x_and_y_scale();
     }
 
 }
-miropeats_d3(aln_data);
+
+miropeats_d3(l_aln_data);
+
+
+// change things when selector is used 
+// When the button is changed, run the updateChart function
+targetButton.on("change", function(d) {
+    // recover the option that has been chosen
+    var selectedOption = d3.select(this).property("value")
+    console.log("selected option target:" +selectedOption);
+    d3.selectAll("svg > *").remove();
+    // run the updateChart function with this selected option
+    miropeats_d3(l_aln_data)
+})
+
+queryButton.on("change", function(d) {
+    // recover the option that has been chosen
+    var selectedOption = d3.select(this).property("value")
+    console.log("selected option query:" +selectedOption);
+    d3.selectAll("svg > *").remove();
+    // run the updateChart function with this selected option
+    miropeats_d3(l_aln_data)
+})

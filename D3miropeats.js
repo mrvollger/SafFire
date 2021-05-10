@@ -187,7 +187,7 @@ function miropeats_d3(aln_data){
                 .text(`${o_c1_st} - ${o_c1_en}`);
             // query text
             container.append('text')
-                .attr("x",(c2_st+c2_en)/2).attr("y",c2_h-10)
+                .attr("x",(c2_st+c2_en)/2).attr("y",c2_h-5)
                 .style("fill", "black")
                 .style("font-size", "10px")
                 .attr("text-anchor", "middle")

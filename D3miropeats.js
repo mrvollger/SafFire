@@ -70,13 +70,14 @@ function miropeats_d3(aln_data){
         //.attr("height", "100%")
         .attr("viewBox", `0 0 ${width} ${height}`); // top, left, width, down
 
-    // xscale
-    var xscale = d3.scaleLinear()
+    
+    // xscale inital x scale
+    const xscale = d3.scaleLinear()
             .domain([d3.min(aln_data, function(d) { return d3.min([d.c1_st,d.c2_st]) }),
                     d3.max(aln_data, function(d) { return d3.max([d.c1_en,d.c2_en]) })])
             .range([margin.left, width - margin.right])
-            .nice();
-
+    
+    var xz = xscale;
     // yscale
     var yscale_d = d3.scaleBand()
             .domain(ct_names)
@@ -89,8 +90,15 @@ function miropeats_d3(aln_data){
             .domain([d3.min(aln_data, function(d) { return d.id }),
                      d3.max(aln_data, function(d) { return d.id })])
             .range([0.15, 0.6]);
-    
-    
+
+
+    // zoom scale 
+    const zoom = d3.zoom()
+        .scaleExtent([1, 32])
+        .extent([[margin.left, 0], [width - margin.right, height]])
+        .translateExtent([[margin.left, -Infinity], [width - margin.right, Infinity]])
+        .on("zoom", zoomed);
+
     // Define the div for the tooltip
     var div = d3.select("body").append("div")	
             .style("opacity", 0)
@@ -104,10 +112,13 @@ function miropeats_d3(aln_data){
 
 
     // my draw the bezier curves and fill
-    function help_draw_alignment(c1_nm, o_c1_st, o_c1_en, c2_nm, o_c2_st, o_c2_en, perid, strand) {
-        
-        var c1_st = xscale(o_c1_st), c1_en = xscale(o_c1_en),
-        c2_st = xscale(o_c2_st), c2_en = xscale(o_c2_en);
+    function help_draw_alignment(c1_nm, o_c1_st, o_c1_en, c2_nm,
+         o_c2_st, o_c2_en,
+         perid, strand) {
+        console.log("inner xz: "+xz(100));
+
+        var c1_st = xz(o_c1_st), c1_en = xz(o_c1_en),
+        c2_st = xz(o_c2_st), c2_en = xz(o_c2_en);
         
         const path = d3.path(),
         c1_h = yscale_d(c1_nm),//+yscale_d.bandwidth(),
@@ -170,13 +181,13 @@ function miropeats_d3(aln_data){
             })
         
         if(aln_data.length < 20){ 
-            container.append("line")
+            /*container.append("line")
                 .attr("x1",c1_st+2).attr("y1",c1_h)
                 .attr("x2",c1_en-2).attr("y2",c1_h)
                 .attr("stroke", "black")  
                 //.attr("stroke-width",2)
                 .attr("marker-start","url(#arrow)")
-                .attr("marker-end","url(#arrow)");
+                .attr("marker-end","url(#arrow)");*/
             // target text         
             container.append('text')
                 .attr("x",(c1_st+c1_en)/2).attr("y",c1_h+10)
@@ -202,26 +213,60 @@ function miropeats_d3(aln_data){
         help_draw_alignment(d.c1_nm, d.c1_st, d.c1_en, d.c2_nm, d.c2_st, d.c2_en, d.id, d.strand);
     }
 
-    // draw the x axis 
-    container.append('g')
-        .attr('transform', `translate(0, ${10+height-margin.bottom})`)
-        .call(d3.axisBottom(xscale).ticks(8));
+    function draw_x_and_y_scale(){
+        // draw the x axis 
+        var xAxis = (g, x) => g
+            .attr('transform', `translate(0, ${margin.top-10})`)
+            .call(d3.axisTop(x).ticks(8));
 
-    // draw the x axis 
-    container.append('g')
-        .attr('transform', `translate(0, ${margin.top-10})`)
-        .call(d3.axisTop(xscale).ticks(8));
+        const gx = container.append("g")
+            .call(xAxis, xz);
 
-    // draw the y axis 
-    container.append('g')
-        .attr('transform', `translate(${margin.left}, 0)`)
-        .call(d3.axisLeft(yscale_d));
-
+        // draw the y axis 
+        container.append('g')
+            .attr('transform', `translate(${margin.left}, 0)`)
+            .call(d3.axisLeft(yscale_d));
+    };
+    draw_x_and_y_scale();
+    
+    // clipping things outside? only usable in observabel?
+    /*
+    const clip = DOM.uid("clip");
+        .attr("id", clip.id)
+    const clip = container.append("clipPath")
+      .append("rect")
+        .attr("x", margin.left)
+        .attr("y", margin.top)
+        .attr("width", width - margin.left - margin.right)
+        .attr("height", height - margin.top - margin.bottom);
+        .attr("clip-path", clip)
+    */
+    
     // add in the data 
-    container.selectAll('g.item')
-        .data(aln_data)
-        .enter()
-        .each(draw_alignment)
-        .selectAll('path');
+    function draw_data(xz){
+        container.selectAll('g.item')
+            .data(aln_data)
+            .enter()
+            .each(draw_alignment)
+            .selectAll('path')
+    };
+    draw_data(xz);
+
+    // zooming 
+    container.call(zoom)
+        .transition()
+        .duration(750)
+        .call(zoom.scaleTo, 1, [xscale(width),1] );
+
+    function zoomed(event) {
+        xz = event.transform.rescaleX(xscale);
+        //xz = update(xz); //update global scale?
+        console.log("xz: "+xz(100));
+        console.log("x:  "+xscale(100));
+        d3.selectAll("svg > *").remove();
+        draw_data(xz)
+        draw_x_and_y_scale();
+    }
+
 }
 miropeats_d3(aln_data);

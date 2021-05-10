@@ -180,13 +180,6 @@ function miropeats_d3(aln_data){
             })
         
         if(aln_data.length < 20){ 
-            /*container.append("line")
-                .attr("x1",c1_st+2).attr("y1",c1_h)
-                .attr("x2",c1_en-2).attr("y2",c1_h)
-                .attr("stroke", "black")  
-                //.attr("stroke-width",2)
-                .attr("marker-start","url(#arrow)")
-                .attr("marker-end","url(#arrow)");*/
             // target text         
             container.append('text')
                 .attr("x",(c1_st+c1_en)/2).attr("y",c1_h+10)
@@ -238,6 +231,7 @@ function miropeats_d3(aln_data){
             .attr('transform', `translate(0, 0)`)
             .attr("opacity", 1)
             .attr("fill", "black")
+            .attr("stroke-width", 0)
             .call(d3.axisRight(yscale_d));
         
     };

@@ -61,12 +61,6 @@
         }
     </style>
     <body>
-        <div id="label-container" class="label-container">
-        <label class="custom-file-upload">
-            <code>Load your own <b>rustybam stats</code></b>
-            <input type="file" id="uploader" name="Upload you rustybam stats table here.">
-        </label>
-
         <!-- Initialize a select button -->
         <select id="targetButton"></select>
         <select id="queryButton"></select>
@@ -78,5 +72,12 @@
         <script>
             upload_button("uploader", load_dataset);
         </script>
+        
+        <div id="label-container" class="label-container">
+        <label class="custom-file-upload">
+            <code>Load your own <b>rustybam stats</code></b>
+            <input type="file" id="uploader" name="Upload you rustybam stats table here.">
+        </label>
+
     </body>
 </html>

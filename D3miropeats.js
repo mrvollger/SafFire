@@ -288,15 +288,15 @@ function miropeats_d3(data){
             .selectAll('path')
     
     // add contig bars
-    var xc1 = xscale(aln_data[0].c1_len);
-    var xc2 = xscale(aln_data[0].c2_len);
+    var xc1 = xz(aln_data[0].c1_len);
+    var xc2 = xz(aln_data[0].c2_len);
     var yc1 = yscale_d(aln_data[0].c1_nm);
     var yc2 = yscale_d(aln_data[0].c2_nm);
 
     const path = d3.path();
-    path.moveTo(xscale(0),yc1+6);
+    path.moveTo(xz(0),yc1+6);
     path.lineTo(xc1,yc1+6);
-    path.moveTo(xscale(0),yc2-6);
+    path.moveTo(xz(0),yc2-6);
     path.lineTo(xc2,yc2-6);
     path.closePath();
 

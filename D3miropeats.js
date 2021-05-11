@@ -1,11 +1,12 @@
-var margin = {top: 40, right: 10, bottom: 40, left: 10};
-
+var margin = {top: 40, right: 30, bottom: 40, left: 30};
 var l_aln_data = [
-          {c1_nm: "Chr 1", c1_st: 0, c1_en: 100, c2_nm: "Chr 2", c2_st: 20, c2_en: 120, id: 90, strand: "+"},
-          {c1_nm: "Chr 1", c1_st: 100, c1_en: 300, c2_nm: "Chr 2", c2_st: 120, c2_en: 320, id: 50, strand: "-"},
-          {c1_nm: "Chr 1", c1_st: 300, c1_en: 400, c2_nm: "Chr 2", c2_st: 320, c2_en: 420, id: 20, strand: "+"},
-          {c1_nm: "Chr 1", c1_st: 400, c1_en: 450, c2_nm: "Chr 2", c2_st: 0, c2_en: 50, id: 100, strand: "-"},
-          {c1_nm: "Chr 1", c1_st: 400, c1_en: 450, c2_nm: "Chr 3", c2_st: 0, c2_en: 50, id: 100, strand: "-"},
+          {c1_nm: "Chr 1", c1_st: 0, c1_en: 100, c1_len: 1000,
+           c2_nm: "Chr 2", c2_st: 20, c2_en: 120, c2_len: 1000,
+           id: 90, strand: "+"},
+          //{c1_nm: "Chr 1", c1_st: 100, c1_en: 300, c2_nm: "Chr 2", c2_st: 120, c2_en: 320, id: 50, strand: "-"},
+          //{c1_nm: "Chr 1", c1_st: 300, c1_en: 400, c2_nm: "Chr 2", c2_st: 320, c2_en: 420, id: 20, strand: "+"},
+          //{c1_nm: "Chr 1", c1_st: 400, c1_en: 450, c2_nm: "Chr 2", c2_st: 0, c2_en: 50, id: 100, strand: "-"},
+          //{c1_nm: "Chr 1", c1_st: 400, c1_en: 450, c2_nm: "Chr 3", c2_st: 0, c2_en: 50, id: 100, strand: "-"},
       ];
 
 // load dataset and create table
@@ -16,24 +17,34 @@ function load_dataset(csv) {
 }
 
 function create_table(data) {
-    var data2 = data.map(function(d){
+    l_aln_data = data.map(function(d){
         return {
             c1_nm: "Target: " + d["#reference_name"],
             c1_st: +d.reference_start,
             c1_en: +d.reference_end,
+            c1_len: +d.reference_length,
             strand: d.strand,
             c2_nm: "Query: "+ d["query_name"],
             c2_st: +d.query_start,
             c2_en: +d.query_end,
+            c2_len: +d.query_length,
             id: +d.perID_by_events,
         };
     });
-    console.log(data2);
+    console.log(l_aln_data);
     var svg = d3.select("#chart");
     svg.selectAll("*").remove();
-    update_selectors(data2);
-    miropeats_d3(data2);
+    update_selectors(l_aln_data);
+    miropeats_d3(l_aln_data);
 };
+// load in the t2t alignments as defualt 
+d3.tsv("datasets/GRCh38_to_T2T.CHM13.v1.1.tbl")
+    .then(function(d) {   // Handle the resolved Promise
+        return create_table(d);
+    });
+
+
+
 
 // handle upload button
 function upload_button(el, callback) {
@@ -103,7 +114,7 @@ function miropeats_d3(data){
     console.log(ct_names);
    
     // set up the view box
-    var height= 300;
+    var height= 200;
     var width=800;
     var container = d3.select("#chart")
         .append("svg")
@@ -112,8 +123,10 @@ function miropeats_d3(data){
     
     // xscale inital x scale
     const xscale = d3.scaleLinear()
-            .domain([d3.min(aln_data, function(d) { return d3.min([d.c1_st,d.c2_st]) }),
-                    d3.max(aln_data, function(d) { return d3.max([d.c1_en,d.c2_en]) })])
+            .domain([0,
+                    d3.max(aln_data, function(d) { 
+                        return d3.max([d.c1_len,d.c2_len]) 
+                    })])
             .range([margin.left, width - margin.right])
     
     var xz = xscale;
@@ -130,7 +143,7 @@ function miropeats_d3(data){
                      d3.max(aln_data, function(d) { return d.id })])
             .range([0.15, 0.6]);
 
-
+   
     // zoom scale 
     const zoom = d3.zoom()
         .scaleExtent([1, 32])
@@ -148,8 +161,6 @@ function miropeats_d3(data){
             .style("border-radius", "5px")
             .style("padding", "5px")    
             
-
-
     // my draw the bezier curves and fill
     function help_draw_alignment(c1_nm, o_c1_st, o_c1_en, c2_nm,
          o_c2_st, o_c2_en,
@@ -163,7 +174,11 @@ function miropeats_d3(data){
         c1_h = yscale_d(c1_nm) + 5,//+yscale_d.bandwidth(),
         c2_h = yscale_d(c2_nm) - 5, //yscale_d(c2_nm),
         mid = (c1_h + c2_h) / 2; //yscale((c1_h+c2_h)/2);
-        
+        container.append("path")
+            .attr("d", path)
+            .attr("color", "black")
+            .attr("stroke-width",2)
+         
         // forward color
         var color = "#af0404" // red
         if( strand == "-"){
@@ -217,7 +232,7 @@ function miropeats_d3(data){
                     .style("opacity", 0);	
             })
         
-        if(aln_data.length < 20){ 
+        if(aln_data.length < 6){ 
             // target text         
             container.append('text')
                 .attr("x",(c1_st+c1_en)/2).attr("y",c1_h+10)
@@ -271,6 +286,26 @@ function miropeats_d3(data){
             .enter()
             .each(draw_alignment)
             .selectAll('path')
+    
+    // add contig bars
+    var xc1 = xscale(aln_data[0].c1_len);
+    var xc2 = xscale(aln_data[0].c2_len);
+    var yc1 = yscale_d(aln_data[0].c1_nm);
+    var yc2 = yscale_d(aln_data[0].c2_nm);
+
+    const path = d3.path();
+    path.moveTo(xscale(0),yc1+6);
+    path.lineTo(xc1,yc1+6);
+    path.moveTo(xscale(0),yc2-6);
+    path.lineTo(xc2,yc2-6);
+    path.closePath();
+
+    container.append("path")
+        .attr("d", path)
+        .attr("stroke", "black")
+        .attr("stroke-width", 2)
+        .attr('opacity', 1);
+         
     };
     draw_data(xz);
 
@@ -313,6 +348,7 @@ function miropeats_d3(data){
 
         d3.selectAll("svg").remove();
         // filter for contig of interest! 
+        console.log(l_aln_data);
         var aln_data = l_aln_data.filter(function (e) {
             return e.c1_nm == t_name && e.c2_nm == q_name;
         });

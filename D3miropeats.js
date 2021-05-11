@@ -85,17 +85,17 @@ function update_selectors(data){
 } 
 update_selectors(l_aln_data);
 
-function miropeats_d3(l_aln_data){
-    var aln_data = l_aln_data;
+function miropeats_d3(data){
+    var aln_data = data;
     //var ct_names = d3.set(aln_data, function(d){return d.c2_nm;});
-    var t_names = [...new Set(l_aln_data.map(d => d.c1_nm))];
-    var q_names = [...new Set(l_aln_data.map(d => d.c2_nm))];
+    var t_names = [...new Set(data.map(d => d.c1_nm))];
+    var q_names = [...new Set(data.map(d => d.c2_nm))];
     
     var t_name = t_names[0];
     var q_name = q_names[0];
 
     // filter for contig of interest! 
-    var aln_data = l_aln_data.filter(function (e) {
+    var aln_data = data.filter(function (e) {
         return e.c1_nm == t_name && e.c2_nm == q_name;
     });
 

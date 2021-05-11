@@ -31,6 +31,7 @@ function create_table(data) {
     console.log(data2);
     var svg = d3.select("#chart");
     svg.selectAll("*").remove();
+    update_selectors(data2);
     miropeats_d3(data2);
 };
 
@@ -56,15 +57,13 @@ function upload_button(el, callback) {
 var queryButton = d3.select("#queryButton");
 var targetButton = d3.select("#targetButton");
 
-function miropeats_d3(l_aln_data){
-
-    //var ct_names = d3.set(aln_data, function(d){return d.c2_nm;});
-    var t_names = [...new Set(l_aln_data.map(d => d.c1_nm))];
-    var q_names = [...new Set(l_aln_data.map(d => d.c2_nm))];
+function update_selectors(data){
+    var t_names = [...new Set(data.map(d => d.c1_nm))];
+    var q_names = [...new Set(data.map(d => d.c2_nm))];
+    // remove previous selections 
+    d3.selectAll("option").remove()
     
-    targetButton.selectAll('myOptions').exit()
     // add the options to the button
-    //d3.select("#targetButton")
     targetButton
         .selectAll('myOptions')
         .data(t_names)
@@ -83,23 +82,32 @@ function miropeats_d3(l_aln_data){
         .append('option')
         .text(function (d) { return d; }) // text showed in the menu
         .attr("value", function (d) { return d; }) // corresponding value returned by the button
-    var sel = document.getElementById('queryButton');
-    var q_name = sel.options[sel.selectedIndex].value
-    console.log("q_name:"+q_name+" t_name:"+t_name );
+} 
+update_selectors(l_aln_data);
 
-    var ct_names = [q_name, t_name];
-    console.log(ct_names);
+function miropeats_d3(l_aln_data){
+    var aln_data = l_aln_data;
+    //var ct_names = d3.set(aln_data, function(d){return d.c2_nm;});
+    var t_names = [...new Set(l_aln_data.map(d => d.c1_nm))];
+    var q_names = [...new Set(l_aln_data.map(d => d.c2_nm))];
     
+    var t_name = t_names[0];
+    var q_name = q_names[0];
+
+    // filter for contig of interest! 
     var aln_data = l_aln_data.filter(function (e) {
         return e.c1_nm == t_name && e.c2_nm == q_name;
     });
-    
-    var height=100 * (ct_names.length);//*d3.set(ct_names).size();
+
+    var ct_names = [q_name, t_name];
+    console.log(ct_names);
+   
+    // set up the view box
+    var height= 300;
     var width=800;
     var container = d3.select("#chart")
         .append("svg")
         .attr("width", "100%")
-        //.attr("height", "100%")
         .attr("viewBox", `0 0 ${width} ${height}`) // top, left, width, down
     
     // xscale inital x scale
@@ -243,19 +251,7 @@ function miropeats_d3(l_aln_data){
 
         container.append("g")
             .call(xAxis, xz);
-
-        /*
-        var xmin = xz(d3.min(aln_data, function(d) { return d3.min([d.c1_st,d.c2_st]) }));
-        var xmax = xz(d3.max(aln_data, function(d) { return d3.max([d.c1_en,d.c2_en]) }));
-        // add contig lines 
-        var n = ct_names[1]
-        container.append("line")
-                .attr("x1", 0).attr("y1",yscale_d(n))
-                .attr("x2", xmax).attr("y2",yscale_d(n))
-                .attr("stroke", "gray")  
-                .attr("stroke-width",1);
-        */
-
+        
         // draw the y axis
         container.append('g')
             .attr('transform', `translate(0, 0)`)
@@ -295,27 +291,35 @@ function miropeats_d3(l_aln_data){
         draw_x_and_y_scale();
     }
 
+
+
+    // change things when selector is used 
+    // When the button is changed, run the updateChart function
+    targetButton.on("change", function(d) {
+        change_contigs();
+    })
+
+    queryButton.on("change", function(d) {
+        change_contigs();
+    })
+
+    function change_contigs(){
+        var sel = document.getElementById('queryButton');
+        var q_name = sel.options[sel.selectedIndex].value
+        var sel = document.getElementById('targetButton');
+        var t_name = sel.options[sel.selectedIndex].value
+        console.log("selected option query:" + q_name);
+        console.log("selected option target:" + t_name);
+
+        d3.selectAll("svg").remove();
+        // filter for contig of interest! 
+        var aln_data = l_aln_data.filter(function (e) {
+            return e.c1_nm == t_name && e.c2_nm == q_name;
+        });
+        console.log(aln_data)
+        miropeats_d3(aln_data)
+    }
+
 }
 
 miropeats_d3(l_aln_data);
-
-
-// change things when selector is used 
-// When the button is changed, run the updateChart function
-targetButton.on("change", function(d) {
-    // recover the option that has been chosen
-    var selectedOption = d3.select(this).property("value")
-    console.log("selected option target:" +selectedOption);
-    d3.selectAll("svg > *").remove();
-    // run the updateChart function with this selected option
-    miropeats_d3(l_aln_data)
-})
-
-queryButton.on("change", function(d) {
-    // recover the option that has been chosen
-    var selectedOption = d3.select(this).property("value")
-    console.log("selected option query:" +selectedOption);
-    d3.selectAll("svg > *").remove();
-    // run the updateChart function with this selected option
-    miropeats_d3(l_aln_data)
-})

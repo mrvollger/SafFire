@@ -9,6 +9,10 @@ var l_aln_data = [
           //{c1_nm: "Chr 1", c1_st: 400, c1_en: 450, c2_nm: "Chr 3", c2_st: 0, c2_en: 50, id: 100, strand: "-"},
       ];
 
+var t_name = "";
+var q_name = "";
+var xz = "";
+
 // load dataset and create table
 function load_dataset(csv) {
     var data = d3.tsvParse(csv)
@@ -102,8 +106,8 @@ function miropeats_d3(data){
     var t_names = [...new Set(data.map(d => d.c1_nm))];
     var q_names = [...new Set(data.map(d => d.c2_nm))];
     
-    var t_name = t_names[0];
-    var q_name = q_names[0];
+    t_name = t_names[0];
+    q_name = q_names[0];
 
     // filter for contig of interest! 
     var aln_data = data.filter(function (e) {
@@ -114,8 +118,8 @@ function miropeats_d3(data){
     console.log(ct_names);
    
     // set up the view box
-    var height= 200;
-    var width=800;
+    var height= 200*2;
+    var width=800*2;
     var container = d3.select("#chart")
         .append("svg")
         .attr("width", "100%")
@@ -129,7 +133,7 @@ function miropeats_d3(data){
                     })])
             .range([margin.left, width - margin.right])
     
-    var xz = xscale;
+    xz = xscale;
     // yscale
     var yscale_d = d3.scaleBand()
             .domain([q_name, t_name])
@@ -356,6 +360,22 @@ function miropeats_d3(data){
         miropeats_d3(aln_data)
     }
 
+
+
 }
 
 miropeats_d3(l_aln_data);
+
+
+    function reload(){
+        var start = "http://genome.ucsc.edu/cgi-bin/hgRenderTracks?"
+        var session = "hgS_doOtherUser=submit&hgS_otherUserName=mrvollger&hgS_otherUserSessionName=SNV&"
+        var b_st = Math.round( xz.domain()[0] );
+        var b_en = Math.round( xz.domain()[1] );
+        var b_chr = t_name.slice(8);
+        var position = "position=" + b_chr + "%3A" + b_st + "-" + b_en + "&"; 
+        var b_width = "pix=" + (document.body.clientWidth - margin.right );
+        var url = start + session + position + b_width;
+        console.log(url);
+        document.getElementById("myWidth").src = url;
+    }

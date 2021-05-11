@@ -3,6 +3,8 @@
     <head>
         <meta charset="UTF-8">
         <title>D3 Miropeats</title>
+
+        
         <!-- Load d3.js -->
         <script src="https://d3js.org/d3.v6.min.js"></script>
         <script src="https://d3js.org/d3-color.v2.min.js"></script>
@@ -21,11 +23,11 @@
         }
         .label-container {
             margin: auto;
-            width: 20%;
+            width: 60%;
             vertical-align: middle;
         }
         .custom-file-upload {
-            width: 100%;
+            width: 30%;
             vertical-align: middle;
             border: 1.5px solid rgba(2, 145, 170, 0.473);
             border-radius: 12px;
@@ -61,6 +63,20 @@
         }
     </style>
     <body>
+        <div id="label-container" class="label-container">
+            <label class="custom-file-upload">
+                <code>Load your own <b>rustybam stats</code></b>
+                <input type="file" id="uploader">
+            </label>
+            <label class="custom-file-upload">
+                <code>Load a <b>UCSC browser session</code></b>
+                <input type="text" id="session">
+            </label>
+            <label class="custom-file-upload">
+                <input type=button onClick=reload(); value='Reload image'>
+            </label>
+        </div>
+
         <!-- Initialize a select button -->
         <select id="targetButton"></select>
         <select id="queryButton"></select>
@@ -72,12 +88,9 @@
         <script>
             upload_button("uploader", load_dataset);
         </script>
-        
-        <div id="label-container" class="label-container">
-        <label class="custom-file-upload">
-            <code>Load your own <b>rustybam stats</code></b>
-            <input type="file" id="uploader" name="Upload you rustybam stats table here.">
-        </label>
+
+            
+        <img id="myWidth">
 
     </body>
 </html>

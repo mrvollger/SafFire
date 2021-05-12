@@ -1,17 +1,21 @@
-var margin = {top: 40, right: 30, bottom: 40, left: 30};
+var margin = {top: 40, right: 0, bottom: 40, left: 3};
 var l_aln_data = [
           {c1_nm: "Chr 1", c1_st: 0, c1_en: 100, c1_len: 1000,
            c2_nm: "Chr 2", c2_st: 20, c2_en: 120, c2_len: 1000,
            id: 90, strand: "+"},
-          //{c1_nm: "Chr 1", c1_st: 100, c1_en: 300, c2_nm: "Chr 2", c2_st: 120, c2_en: 320, id: 50, strand: "-"},
-          //{c1_nm: "Chr 1", c1_st: 300, c1_en: 400, c2_nm: "Chr 2", c2_st: 320, c2_en: 420, id: 20, strand: "+"},
-          //{c1_nm: "Chr 1", c1_st: 400, c1_en: 450, c2_nm: "Chr 2", c2_st: 0, c2_en: 50, id: 100, strand: "-"},
-          //{c1_nm: "Chr 1", c1_st: 400, c1_en: 450, c2_nm: "Chr 3", c2_st: 0, c2_en: 50, id: 100, strand: "-"},
       ];
 
 var t_name = "";
 var q_name = "";
+var c2_offset = 0; // how much to offset the second contig to allow for centering 
 var xz = "";
+var xz_offset = "";
+var scale = 1.25;
+var height=Math.round(200*scale);
+var width=Math.round(800*scale);
+const label_margin = 10;
+const forward_color = "#2081f9";
+const reverse_color = "#f99820";
 
 // load dataset and create table
 function load_dataset(csv) {
@@ -28,17 +32,16 @@ function create_table(data) {
             c1_en: +d.reference_end,
             c1_len: +d.reference_length,
             strand: d.strand,
-            c2_nm: "Query: "+ d["query_name"],
+            c2_nm: "Query: "+ d["query_name"] + ":0-" + d3.format(".2s")(d["query_length"])+"bp",
             c2_st: +d.query_start,
             c2_en: +d.query_end,
             c2_len: +d.query_length,
             id: +d.perID_by_events,
         };
     });
-    console.log(l_aln_data);
     var svg = d3.select("#chart");
     svg.selectAll("*").remove();
-    update_selectors(l_aln_data);
+    new_target_selector(l_aln_data);
     miropeats_d3(l_aln_data);
 };
 // load in the t2t alignments as defualt 
@@ -72,33 +75,8 @@ function upload_button(el, callback) {
 var queryButton = d3.select("#queryButton");
 var targetButton = d3.select("#targetButton");
 
-function update_selectors(data){
-    var t_names = [...new Set(data.map(d => d.c1_nm))];
-    var q_names = [...new Set(data.map(d => d.c2_nm))];
-    // remove previous selections 
-    d3.selectAll("option").remove()
-    
-    // add the options to the button
-    targetButton
-        .selectAll('myOptions')
-        .data(t_names)
-        .enter()
-        .append('option')
-        .text(function (d) { return d; }) // text showed in the menu
-        .attr("value", function (d) { return d; }) // corresponding value returned by the button
-    var sel = document.getElementById('targetButton');
-    var t_name = sel.options[sel.selectedIndex].value
 
-    // add the options to the button
-    queryButton
-        .selectAll('myOptions')
-        .data(q_names)
-        .enter()
-        .append('option')
-        .text(function (d) { return d; }) // text showed in the menu
-        .attr("value", function (d) { return d; }) // corresponding value returned by the button
-} 
-update_selectors(l_aln_data);
+new_target_selector(l_aln_data);
 
 function miropeats_d3(data){
     var aln_data = data;
@@ -118,8 +96,6 @@ function miropeats_d3(data){
     console.log(ct_names);
    
     // set up the view box
-    var height= 200*2;
-    var width=800*2;
     var container = d3.select("#chart")
         .append("svg")
         .attr("width", "100%")
@@ -132,8 +108,11 @@ function miropeats_d3(data){
                         return d3.max([d.c1_len,d.c2_len]) 
                     })])
             .range([margin.left, width - margin.right])
-    
-    xz = xscale;
+    xz = xscale; // define a zoomed version
+    function xz_offset(d){
+        return xz(d + c2_offset);
+    };
+
     // yscale
     var yscale_d = d3.scaleBand()
             .domain([q_name, t_name])
@@ -145,12 +124,12 @@ function miropeats_d3(data){
     var alpha_scale = d3.scaleLinear()
             .domain([d3.min(aln_data, function(d) { return d.id }),
                      d3.max(aln_data, function(d) { return d.id })])
-            .range([0.15, 0.6]);
+            .range([0.5, 0.7]);
 
    
     // zoom scale 
     const zoom = d3.zoom()
-        .scaleExtent([1, 32])
+        .scaleExtent([1, 100000])
         .extent([[margin.left, 0], [width - margin.right, height]])
         .translateExtent([[margin.left, -Infinity], [width - margin.right, Infinity]])
         .on("zoom", zoomed);
@@ -169,27 +148,26 @@ function miropeats_d3(data){
     function help_draw_alignment(c1_nm, o_c1_st, o_c1_en, c2_nm,
          o_c2_st, o_c2_en,
          perid, strand) {
-        //console.log("inner xz: "+xz(100));
-
+        
+        //
         var c1_st = xz(o_c1_st), c1_en = xz(o_c1_en),
-        c2_st = xz(o_c2_st), c2_en = xz(o_c2_en);
+        c2_st = xz_offset(o_c2_st), c2_en = xz_offset(o_c2_en);
         
         const path = d3.path(),
-        c1_h = yscale_d(c1_nm) + 5,//+yscale_d.bandwidth(),
-        c2_h = yscale_d(c2_nm) - 5, //yscale_d(c2_nm),
+        c1_h = yscale_d(c1_nm) + label_margin,//+yscale_d.bandwidth(),
+        c2_h = yscale_d(c2_nm) - label_margin, //yscale_d(c2_nm),
         mid = (c1_h + c2_h) / 2; //yscale((c1_h+c2_h)/2);
         container.append("path")
             .attr("d", path)
             .attr("color", "black")
             .attr("stroke-width",2)
          
-        // forward color
-        var color = "#af0404" // red
+        var color = forward_color
         if( strand == "-"){
             var tmp = c2_st;
             c2_st = c2_en;
             c2_en = tmp;
-            var color = "#3282b8";
+            var color = reverse_color;
         };
         // color alpha on identity 
         var opacity = alpha_scale(perid);
@@ -232,7 +210,7 @@ function miropeats_d3(data){
                         .attr('opacity', `${opacity}`);
                 // remove tooltip
                 div.transition()		
-                    .duration(200)		
+                    .duration(10)		
                     .style("opacity", 0);	
             })
         
@@ -285,31 +263,35 @@ function miropeats_d3(data){
     
     // add in the data 
     function draw_data(xz){
+        // center the query contig
+        c2_offset = difference_in_mid_point(aln_data);
+
+        // add in the bezier curves
         container.selectAll('g.item')
             .data(aln_data)
             .enter()
             .each(draw_alignment)
             .selectAll('path')
-    
-    // add contig bars
-    var xc1 = xz(aln_data[0].c1_len);
-    var xc2 = xz(aln_data[0].c2_len);
-    var yc1 = yscale_d(aln_data[0].c1_nm);
-    var yc2 = yscale_d(aln_data[0].c2_nm);
+        
+        // add contig bars
+        var xc1 = xz(aln_data[0].c1_len);
+        var xc2 = xz_offset(aln_data[0].c2_len);
+        var yc1 = yscale_d(aln_data[0].c1_nm);
+        var yc2 = yscale_d(aln_data[0].c2_nm);
 
-    const path = d3.path();
-    path.moveTo(xz(0),yc1+6);
-    path.lineTo(xc1,yc1+6);
-    path.moveTo(xz(0),yc2-6);
-    path.lineTo(xc2,yc2-6);
-    path.closePath();
+        const path = d3.path();
+        path.moveTo(xz(0),yc1+label_margin); // c1 start
+        path.lineTo(xc1,yc1+label_margin); // go to c1 en
+        path.moveTo(xz_offset(0),yc2-label_margin);
+        path.lineTo(xc2, yc2-label_margin);
+        path.closePath();
 
-    container.append("path")
-        .attr("d", path)
-        .attr("stroke", "black")
-        .attr("stroke-width", 2)
-        .attr('opacity', 1);
-         
+        container.append("path")
+            .attr("d", path)
+            .attr("stroke", "black")
+            .attr("stroke-width", 3)
+            .attr('opacity', 1);
+            
     };
     draw_data(xz);
 
@@ -321,20 +303,21 @@ function miropeats_d3(data){
 
     function zoomed(event) {
         xz = event.transform.rescaleX(xscale);
-        //xz = update(xz); //update global scale?
-        //console.log("xz: "+xz(100));
-        //console.log("x:  "+xscale(100));
-        //console.log("max_min\t"+ xz[0]+", " + xz[1]);
         d3.selectAll("svg > *").remove();
         draw_data(xz)
         draw_x_and_y_scale();
+    console.log(margin.left/width)
     }
 
 
 
+   
     // change things when selector is used 
-    // When the button is changed, run the updateChart function
     targetButton.on("change", function(d) {
+        var target_name = this.value;
+        // filter the second button
+        filter_query_button_by_target(target_name);
+        // update the drawings
         change_contigs();
     })
 
@@ -352,11 +335,9 @@ function miropeats_d3(data){
 
         d3.selectAll("svg").remove();
         // filter for contig of interest! 
-        console.log(l_aln_data);
         var aln_data = l_aln_data.filter(function (e) {
             return e.c1_nm == t_name && e.c2_nm == q_name;
         });
-        console.log(aln_data)
         miropeats_d3(aln_data)
     }
 
@@ -367,15 +348,82 @@ function miropeats_d3(data){
 miropeats_d3(l_aln_data);
 
 
-    function reload(){
-        var start = "http://genome.ucsc.edu/cgi-bin/hgRenderTracks?"
-        var session = "hgS_doOtherUser=submit&hgS_otherUserName=mrvollger&hgS_otherUserSessionName=SNV&"
-        var b_st = Math.round( xz.domain()[0] );
-        var b_en = Math.round( xz.domain()[1] );
-        var b_chr = t_name.slice(8);
-        var position = "position=" + b_chr + "%3A" + b_st + "-" + b_en + "&"; 
-        var b_width = "pix=" + (document.body.clientWidth - margin.right );
-        var url = start + session + position + b_width;
-        console.log(url);
-        document.getElementById("myWidth").src = url;
-    }
+function reload(){
+    var user = document.getElementById("UCSCuser").value;
+    var UCSCsession = document.getElementById("UCSCsession").value;
+    console.log(user + " " + UCSCsession);
+    var start = "http://genome.ucsc.edu/cgi-bin/hgRenderTracks?"
+    var session = "hgS_doOtherUser=submit&hgS_otherUserName="+user+"&hgS_otherUserSessionName="+UCSCsession+"&"
+    var b_st = Math.round( xz.domain()[0] );
+    var b_en = Math.round( xz.domain()[1] );
+    var b_chr = t_name.slice(8);
+    var position = "position=" + b_chr + "%3A" + b_st + "-" + b_en + "&"; 
+    //var b_width = "pix=" + (document.body.clientWidth - margin.left -margin.right);
+    var b_width = "pix=" + (document.getElementById('chart').clientWidth - margin.left);
+    var url = start + session + position + b_width;
+    console.log(url);
+    document.getElementById("myWidth").src = url;
+}
+
+/*
+##################################################################################
+*/
+
+ // Change the selection box for group2, dependent on the group1 selection
+function filter_query_button_by_target(target_name){
+    var filtered = l_aln_data.filter(function(d) {
+        return d.c1_nm == target_name;
+    });
+    var uniq_q = [...new Set(filtered.map(d => d.c2_nm))];
+    // remove options previously in the q selector
+    d3.selectAll("#queryButton").selectAll("option").remove()
+    // enter in the new data 
+    queryButton
+        .selectAll('#queryButton')
+        .data(uniq_q)
+        .enter()
+        //.filter(function(d) { return d.c1_nm == t_name })
+        .append('option')
+        .text(function (d) { return d; }) // text showed in the menu
+        .attr("value", function (d) { return d; }) // corresponding value returned by the button
+        .property("selected", function(d){ return d === uniq_q[0]; })
+}
+
+function new_target_selector(new_data){
+    // remove previous selections 
+    d3.selectAll("option").remove()
+    
+    // add the options to the button
+    var t_names = [...new Set(new_data.map(d => d.c1_nm))];
+    console.log("new target names:" + t_names);
+    targetButton
+        .selectAll('myOptions')
+        .data(t_names)
+        .enter()
+        .append('option')
+        .text(function (d) { return d; }) // text showed in the menu
+        .attr("value", function (d) { return d; }); // corresponding value returned by the button
+    
+    var sel = document.getElementById('targetButton');
+    t_name = sel.options[sel.selectedIndex].value
+    filter_query_button_by_target(t_name);
+}
+
+
+function difference_in_mid_point(data){
+    //console.log("finding mid point on the target");
+    var mid_target = 0;
+    var mid_query = 0;
+    var max=0;
+
+    data.map(function(d){
+        var weight = (d.c2_en - d.c2_st);
+        if(weight > max){
+            max=weight;
+            mid_target= (d.c1_en + d.c1_st)/2;
+            mid_query= (d.c2_en + d.c2_st)/2;
+        }
+    });
+    //console.log(mid_target-mid_query);
+    return(  mid_target-mid_query  )
+}

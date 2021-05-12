@@ -49,7 +49,7 @@
         .svg-content-responsive {
             display: inline-block;
             position: absolute;
-            top: 10px;
+            top: 0x;
             left: 0;
         }
         div.tooltip {	
@@ -61,8 +61,21 @@
             font: 12px sans-serif;		
             pointer-events: none;			
         }
+        .browser-container {
+            float: right;
+            width: 100%;
+            display: block;
+        }
+        .myWidth {
+            float: right;
+            display: block;
+        }
+        body {
+            padding: 0.5em;
+        }
     </style>
     <body>
+
         <div id="label-container" class="label-container">
             <label class="custom-file-upload">
                 <code>Load your own <b>rustybam stats</code></b>
@@ -70,10 +83,11 @@
             </label>
             <label class="custom-file-upload">
                 <code>Load a <b>UCSC browser session</code></b>
-                <input type="text" id="session">
+                <input type=button onClick=reload(); value='Reload image'>
             </label>
             <label class="custom-file-upload">
-                <input type=button onClick=reload(); value='Reload image'>
+                <input type="text" id="UCSCuser" placeholder="UCSC user name" value="mrvollger">
+                <input type="text" id="UCSCsession" placeholder="session name" value="T2T">
             </label>
         </div>
 
@@ -81,16 +95,18 @@
         <select id="targetButton"></select>
         <select id="queryButton"></select>
 
-        </div>
         <!-- Create a div where the graph will take place -->
-        <div id="chart"></div>
-        <script type ="text/javascript" src="D3miropeats.js"></script>
-        <script>
-            upload_button("uploader", load_dataset);
-        </script>
+        <div id="chart">
+            <script type ="text/javascript" src="D3miropeats.js"></script>
+            <script>
+                upload_button("uploader", load_dataset);
+            </script>
+        </div>
 
+        <div id="browser-container" class="browser-container">
+            <img id="myWidth" class="myWidth">
+        </div>
             
-        <img id="myWidth">
 
     </body>
 </html>

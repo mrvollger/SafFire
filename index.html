@@ -2,8 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>D3 Miropeats</title>
-
+        <title>SafFire</title>
         
         <!-- Load d3.js -->
         <script src="https://d3js.org/d3.v6.min.js"></script>
@@ -22,14 +21,16 @@
             display: none;
         }
         .label-container {
+            resize: "auto";
             position: fixed;
             margin: auto;
             width: 95%;
             vertical-align: middle;
             border: 1.5px solid rgba(2, 145, 170, 0.473);
             border-radius: 12px;
-            background-color: rgba(240, 248, 255, 0.827);
+            background-color: rgba(240, 248, 255, 0.834);
             display: inline-block;
+            padding-bottom: 100%; /* aspect ratio */
             padding: 2px;
         }
         .custom-file-upload {
@@ -45,11 +46,10 @@
             margin: auto;
             display: inline-block;
             position: relative;
-            padding-bottom: 100%; /* aspect ratio */
             vertical-align: top;
         }
         .svg-content-responsive {
-            margin: auto;
+            vertical-align: top;
             display: inline-block;
             position: absolute;
             width: 98%;
@@ -129,9 +129,12 @@
         <div id="chart">
             <script type ="text/javascript" src="filled_bezier.html"></script>
             <script type ="text/javascript" src="D3miropeats.js"></script>
+            <script type ="text/javascript" src="main.js"></script>
             <script>
                 upload_button("uploader", load_dataset);
             </script>
+        </div>
+        <div id="chart2">
         </div>
 
         <div id="browser-container">

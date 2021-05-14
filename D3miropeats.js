@@ -1,4 +1,5 @@
-var margin = {top: 150, right: 0, bottom: 40, left: 0};
+var chart_name="chart";
+var margin = {top: 100, right: 0, bottom: 40, left: 0};
 var scale = 1.5;
 var height=Math.round(300*scale);
 var width=Math.round(800*scale);
@@ -45,7 +46,7 @@ function create_table(data) {
             id: +d.perID_by_events,
         };
     });
-    var svg = d3.select("#chart");
+    var svg = d3.select("#"+chart_name);
     svg.selectAll("*").remove();
     new_target_selector(l_aln_data);
     miropeats_d3(l_aln_data);
@@ -102,7 +103,7 @@ function miropeats_d3(data){
     console.log(ct_names);
    
     // set up the view box
-    var container = d3.select("#chart")
+    var container = d3.select("#"+chart_name)
         .append("svg")
         .attr("width", "100%")
         .attr("viewBox", `0 0 ${width} ${height}`) // top, left, width, down
@@ -358,7 +359,7 @@ function miropeats_d3(data){
 }
 
 miropeats_d3(l_aln_data);
-
+    
 
 function reload(){
     var user = document.getElementById("UCSCuser").value;
@@ -371,7 +372,7 @@ function reload(){
     var b_chr = t_name;//.slice(8);
     var position = "position=" + b_chr + "%3A" + b_st + "-" + b_en + "&"; 
     //var b_width = "pix=" + (document.body.clientWidth - margin.left -margin.right);
-    var b_width = "pix=" + (document.getElementById('chart').clientWidth - margin.left+15);
+    var b_width = "pix=" + (document.getElementById(chart_name).clientWidth - margin.left+15);
     var url = start + session + position + b_width;
     console.log(url);
     document.getElementById("browser-img").src = url;

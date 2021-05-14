@@ -23,11 +23,11 @@
         }
         .label-container {
             margin: auto;
-            width: 60%;
+            width: 95%;
             vertical-align: middle;
         }
         .custom-file-upload {
-            width: 30%;
+            width: 20%;
             vertical-align: middle;
             border: 1.5px solid rgba(2, 145, 170, 0.473);
             border-radius: 12px;
@@ -56,7 +56,7 @@
             position: absolute;			
             text-align: center;			
             width: 60px;	
-            height: 14px;					
+            height: 40px;					
             padding: 2px;				
             font: 12px sans-serif;		
             pointer-events: none;			
@@ -77,6 +77,13 @@
     <body>
 
         <div id="label-container" class="label-container">
+            <!-- Initialize a select button -->
+            <label class="custom-file-upload">
+                <code><b>Select target and query contig</b></code><br>
+                <select id="targetButton"></select>
+                <select id="queryButton"></select>
+            </label>
+            <!-- Initialize a select button -->
             <label class="custom-file-upload">
                 <code>Click to load your own data
                     <br> Find out more at 
@@ -84,26 +91,28 @@
                     <a href="https://mrvollger.github.io/rustybam/">rustybam stats</a>
                 </code>
             </label>
+            <!-- Initialize a select button -->
             </label>
             <label class="custom-file-upload">
                 <code>Add <b>UCSC</b> snapshot</code>
                 <input type=button onClick=reload(); value='Reload image'>
             </label>
+            <!-- Initialize a select button -->
             <label class="custom-file-upload">
-                <code>Load your own <b>UCSC</b> session</code>
+                <code>Load your own 
+                    <a href="http://genome.ucsc.edu/goldenPath/help/hgSessionHelp.html">
+                        UCSC session
+                    </a>
+                </code>
                 <input type="text" id="UCSCuser" placeholder="UCSC user name" value="mrvollger">
                 <input type="text" id="UCSCsession" placeholder="session name" value="T2T">
             </label>
         </div>
 
-        <label class="custom-file-upload">
-            <!-- Initialize a select button -->
-            <select id="targetButton"></select>
-            <select id="queryButton"></select>
-        </label>
 
         <!-- Create a div where the graph will take place -->
         <div id="chart">
+            <script type ="text/javascript" src="filled_bezier.html"></script>
             <script type ="text/javascript" src="D3miropeats.js"></script>
             <script>
                 upload_button("uploader", load_dataset);

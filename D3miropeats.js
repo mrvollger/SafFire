@@ -1,21 +1,26 @@
-var margin = {top: 40, right: 0, bottom: 40, left: 3};
+var margin = {top: 40, right: 0, bottom: 40, left: 4};
 var l_aln_data = [
           {c1_nm: "Chr 1", c1_st: 0, c1_en: 100, c1_len: 1000,
            c2_nm: "Chr 2", c2_st: 20, c2_en: 120, c2_len: 1000,
            id: 90, strand: "+"},
       ];
-
+// thing I want to be global
 var t_name = "";
 var q_name = "";
 var c2_offset = 0; // how much to offset the second contig to allow for centering 
-var xz = "";
+var yscale_d = "";
+var xscale = "";
+var alpha_scale = "";
+var xz =  "";
 var xz_offset = "";
-var scale = 1.25;
-var height=Math.round(200*scale);
-var width=Math.round(800*scale);
 const label_margin = 10;
 const forward_color = "#2081f9";
 const reverse_color = "#f99820";
+
+
+var scale = 1.5;
+var height=Math.round(200*scale);
+var width=Math.round(800*scale);
 
 // load dataset and create table
 function load_dataset(csv) {
@@ -102,7 +107,7 @@ function miropeats_d3(data){
         .attr("viewBox", `0 0 ${width} ${height}`) // top, left, width, down
     
     // xscale inital x scale
-    const xscale = d3.scaleLinear()
+    xscale = d3.scaleLinear()
             .domain([0,
                     d3.max(aln_data, function(d) { 
                         return d3.max([d.c1_len,d.c2_len]) 
@@ -121,7 +126,7 @@ function miropeats_d3(data){
             .align(0);
     
     // opacity scale
-    var alpha_scale = d3.scaleLinear()
+    alpha_scale = d3.scaleLinear()
             .domain([d3.min(aln_data, function(d) { return d.id }),
                      d3.max(aln_data, function(d) { return d.id })])
             .range([0.5, 0.7]);
@@ -193,16 +198,20 @@ function miropeats_d3(data){
             .on('mouseover', function (event) {
                 d3.select(this).transition()
                         .duration(100)
-                        .attr('opacity', '.8');
+                        .attr('opacity', '1');
             })
             .on('mousemove', function(event){
                 // add the tooltip
                 div.transition()		
                     .duration(100)		
-                    .style("opacity", .9);		
-                div.html(d3.format(".2f")(perid)+"%")	
-                    .style("left", event.pageX + 20 + "px")		
-                    .style("top", event.pageY + "px");
+                    .style("opacity", .6);		
+                div.html(
+                            d3.format(".1f")(o_c2_en/1000-o_c2_st/1000) + " kbp<br>"+
+                            d3.format(".2f")(perid)+"%<br>" +
+                            d3.format(".1f")(o_c1_en/1000-o_c1_st/1000) + " kbp<br>"
+                        )	
+                    .style("left", event.pageX -80 + "px")		
+                    .style("top", event.pageY -20+ "px");
             })
             .on('mouseout', function () {
                 d3.select(this).transition()
@@ -214,7 +223,7 @@ function miropeats_d3(data){
                     .style("opacity", 0);	
             })
         
-        if(aln_data.length < 6){ 
+        if(aln_data.length < 0){ 
             // target text         
             container.append('text')
                 .attr("x",(c1_st+c1_en)/2).attr("y",c1_h+10)
@@ -232,8 +241,6 @@ function miropeats_d3(data){
                 .attr("font-weight", "normal") 
                 .text(`${o_c2_st} - ${o_c2_en}`);
         }
-
-
     }
     // format the d as input for drawing the alignment
     function draw_alignment(d, i){
@@ -244,8 +251,10 @@ function miropeats_d3(data){
         // draw the x axis 
         var xAxis = (g, x) => g
             .attr('transform', `translate(0, ${height-20})`)
-            .style("font", "14px helvetica")
-            .call(d3.axisBottom(x).ticks(6));
+            .style("font", "11px helvetica")
+            .call(d3.axisBottom(x)
+                .ticks(10)
+            );
 
         container.append("g")
             .call(xAxis, xz);
@@ -306,8 +315,8 @@ function miropeats_d3(data){
     function zoomed(event) {
         xz = event.transform.rescaleX(xscale);
         d3.selectAll("svg > *").remove();
-        draw_data(xz)
         draw_x_and_y_scale();
+        draw_data(xz)
     console.log(margin.left/width)
     }
 
@@ -428,4 +437,23 @@ function difference_in_mid_point(data){
     });
     //console.log(mid_target-mid_query);
     return(  mid_target-mid_query  )
+}
+
+function add_text(container){
+    // target text         
+            container.append('text')
+                .attr("x",(c1_st+c1_en)/2).attr("y",c1_h+10)
+                .style("fill", "black")
+                .style("font-size", "10px")
+                .attr("text-anchor", "middle")
+                .attr("font-weight", "normal") 
+                .text(`${o_c1_st} - ${o_c1_en}`);
+            // query text
+            container.append('text')
+                .attr("x",(c2_st+c2_en)/2).attr("y",c2_h-5)
+                .style("fill", "black")
+                .style("font-size", "10px")
+                .attr("text-anchor", "middle")
+                .attr("font-weight", "normal") 
+                .text(`${o_c2_st} - ${o_c2_en}`);
 }

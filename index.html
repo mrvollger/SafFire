@@ -78,22 +78,29 @@
 
         <div id="label-container" class="label-container">
             <label class="custom-file-upload">
-                <code>Load your own <b>rustybam stats</code></b>
-                <input type="file" id="uploader">
+                <code>Click to load your own data
+                    <br> Find out more at 
+                    <input type="file" id="uploader">
+                    <a href="https://mrvollger.github.io/rustybam/">rustybam stats</a>
+                </code>
+            </label>
             </label>
             <label class="custom-file-upload">
-                <code>Load a <b>UCSC browser session</code></b>
+                <code>Add <b>UCSC</b> snapshot</code>
                 <input type=button onClick=reload(); value='Reload image'>
             </label>
             <label class="custom-file-upload">
+                <code>Load your own <b>UCSC</b> session</code>
                 <input type="text" id="UCSCuser" placeholder="UCSC user name" value="mrvollger">
                 <input type="text" id="UCSCsession" placeholder="session name" value="T2T">
             </label>
         </div>
 
-        <!-- Initialize a select button -->
-        <select id="targetButton"></select>
-        <select id="queryButton"></select>
+        <label class="custom-file-upload">
+            <!-- Initialize a select button -->
+            <select id="targetButton"></select>
+            <select id="queryButton"></select>
+        </label>
 
         <!-- Create a div where the graph will take place -->
         <div id="chart">

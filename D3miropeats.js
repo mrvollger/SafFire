@@ -27,12 +27,12 @@ function load_dataset(csv) {
 function create_table(data) {
     l_aln_data = data.map(function(d){
         return {
-            c1_nm: "Target: " + d["#reference_name"],
+            c1_nm: d["#reference_name"],
             c1_st: +d.reference_start,
             c1_en: +d.reference_end,
             c1_len: +d.reference_length,
             strand: d.strand,
-            c2_nm: "Query: "+ d["query_name"] + ":0-" + d3.format(".2s")(d["query_length"])+"bp",
+            c2_nm: d["query_name"] + ":0-" + d3.format(".2s")(d["query_length"])+"bp",
             c2_st: +d.query_start,
             c2_en: +d.query_end,
             c2_len: +d.query_length,
@@ -115,7 +115,7 @@ function miropeats_d3(data){
 
     // yscale
     var yscale_d = d3.scaleBand()
-            .domain([q_name, t_name])
+            .domain([t_name, q_name])
             .range([height - margin.bottom, margin.top])
             .paddingInner(1)
             .align(0);
@@ -154,8 +154,8 @@ function miropeats_d3(data){
         c2_st = xz_offset(o_c2_st), c2_en = xz_offset(o_c2_en);
         
         const path = d3.path(),
-        c1_h = yscale_d(c1_nm) + label_margin,//+yscale_d.bandwidth(),
-        c2_h = yscale_d(c2_nm) - label_margin, //yscale_d(c2_nm),
+        c1_h = yscale_d(c1_nm) - label_margin,//+yscale_d.bandwidth(),
+        c2_h = yscale_d(c2_nm) + label_margin, //yscale_d(c2_nm),
         mid = (c1_h + c2_h) / 2; //yscale((c1_h+c2_h)/2);
         container.append("path")
             .attr("d", path)
@@ -243,14 +243,16 @@ function miropeats_d3(data){
     function draw_x_and_y_scale(){
         // draw the x axis 
         var xAxis = (g, x) => g
-            .attr('transform', `translate(0, ${margin.top-10})`)
-            .call(d3.axisTop(x).ticks(6));
+            .attr('transform', `translate(0, ${height-20})`)
+            .style("font", "14px helvetica")
+            .call(d3.axisBottom(x).ticks(6));
 
         container.append("g")
             .call(xAxis, xz);
         
         // draw the y axis
         container.append('g')
+            .style("font", "16px helvetica")
             .attr('transform', `translate(0, 0)`)
             .attr("opacity", 1)
             .attr("fill", "black")
@@ -280,10 +282,10 @@ function miropeats_d3(data){
         var yc2 = yscale_d(aln_data[0].c2_nm);
 
         const path = d3.path();
-        path.moveTo(xz(0),yc1+label_margin); // c1 start
-        path.lineTo(xc1,yc1+label_margin); // go to c1 en
-        path.moveTo(xz_offset(0),yc2-label_margin);
-        path.lineTo(xc2, yc2-label_margin);
+        path.moveTo(xz(0),yc1-label_margin); // c1 start
+        path.lineTo(xc1,yc1-label_margin); // go to c1 en
+        path.moveTo(xz_offset(0),yc2+label_margin);
+        path.lineTo(xc2, yc2+label_margin);
         path.closePath();
 
         container.append("path")
@@ -356,7 +358,7 @@ function reload(){
     var session = "hgS_doOtherUser=submit&hgS_otherUserName="+user+"&hgS_otherUserSessionName="+UCSCsession+"&"
     var b_st = Math.round( xz.domain()[0] );
     var b_en = Math.round( xz.domain()[1] );
-    var b_chr = t_name.slice(8);
+    var b_chr = t_name;//.slice(8);
     var position = "position=" + b_chr + "%3A" + b_st + "-" + b_en + "&"; 
     //var b_width = "pix=" + (document.body.clientWidth - margin.left -margin.right);
     var b_width = "pix=" + (document.getElementById('chart').clientWidth - margin.left);

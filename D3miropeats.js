@@ -1,4 +1,8 @@
-var margin = {top: 40, right: 0, bottom: 40, left: 0};
+var margin = {top: 150, right: 0, bottom: 40, left: 0};
+var scale = 1.5;
+var height=Math.round(300*scale);
+var width=Math.round(800*scale);
+
 var l_aln_data = [
           {c1_nm: "Chr 1", c1_st: 0, c1_en: 100, c1_len: 1000,
            c2_nm: "Chr 2", c2_st: 20, c2_en: 120, c2_len: 1000,
@@ -18,9 +22,6 @@ const forward_color = "#2081f9";
 const reverse_color = "#f99820";
 
 
-var scale = 1.5;
-var height=Math.round(200*scale);
-var width=Math.round(800*scale);
 
 // load dataset and create table
 function load_dataset(csv) {

@@ -35,7 +35,7 @@
             display: inline-block;
             padding: 6px;
             cursor: pointer;
-            font: 10px Arial, sans-serif;		
+            font: 14px Arial, sans-serif;		
             text-align: center;
         }
         .svg-container {
@@ -87,14 +87,14 @@
             <label class="custom-file-upload">
                 <code>Click to load your own data
                     <br> Find out more at 
-                    <input type="file" id="uploader">
                     <a href="https://mrvollger.github.io/rustybam/">rustybam stats</a>
+                    <input type="file" id="uploader">
                 </code>
             </label>
             <!-- Initialize a select button -->
             </label>
             <label class="custom-file-upload">
-                <code>Add <b>UCSC</b> snapshot</code>
+                <code>Add <b>UCSC</b> snapshot</code><br>
                 <input type=button onClick=reload(); value='Reload image'>
             </label>
             <!-- Initialize a select button -->
@@ -104,7 +104,9 @@
                         UCSC session
                     </a>
                 </code>
+                <br>
                 <input type="text" id="UCSCuser" placeholder="UCSC user name" value="mrvollger">
+                <br>
                 <input type="text" id="UCSCsession" placeholder="session name" value="T2T">
             </label>
         </div>

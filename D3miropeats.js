@@ -1,4 +1,4 @@
-var margin = {top: 40, right: 0, bottom: 40, left: 4};
+var margin = {top: 40, right: 0, bottom: 40, left: 0};
 var l_aln_data = [
           {c1_nm: "Chr 1", c1_st: 0, c1_en: 100, c1_len: 1000,
            c2_nm: "Chr 2", c2_st: 20, c2_en: 120, c2_len: 1000,
@@ -370,10 +370,10 @@ function reload(){
     var b_chr = t_name;//.slice(8);
     var position = "position=" + b_chr + "%3A" + b_st + "-" + b_en + "&"; 
     //var b_width = "pix=" + (document.body.clientWidth - margin.left -margin.right);
-    var b_width = "pix=" + (document.getElementById('chart').clientWidth - margin.left);
+    var b_width = "pix=" + (document.getElementById('chart').clientWidth - margin.left+15);
     var url = start + session + position + b_width;
     console.log(url);
-    document.getElementById("myWidth").src = url;
+    document.getElementById("browser-img").src = url;
 }
 
 /*

@@ -39,16 +39,17 @@
             text-align: center;
         }
         .svg-container {
+            margin: auto;
             display: inline-block;
             position: relative;
-            width: 100%;
             padding-bottom: 100%; /* aspect ratio */
             vertical-align: top;
-            overflow: hidden;
         }
         .svg-content-responsive {
+            margin: auto;
             display: inline-block;
             position: absolute;
+            width: 98%;
             top: 0x;
             left: 0;
         }
@@ -61,17 +62,26 @@
             font: 12px sans-serif;		
             pointer-events: none;			
         }
-        .browser-container {
-            float: right;
-            width: 100%;
-            display: block;
-        }
-        .myWidth {
-            float: right;
-            display: block;
-        }
         body {
             padding: 0.5em;
+        }
+        #browser-container img {
+            max-width: 98%;
+        }
+        .browser-img {
+            margin:auto;
+            display: block;
+        }
+        #chart svg {
+            margin: auto;
+            max-width: 98%;
+            display: block;
+            overflow: visible;
+        }
+        .chart {
+            margin: auto;
+            max-width: 98%;
+            display: block;
         }
     </style>
     <body>
@@ -121,10 +131,13 @@
             </script>
         </div>
 
-        <div id="browser-container" class="browser-container">
-            <img id="myWidth" class="myWidth">
+        <div id="browser-container">
+            <img id="browser-img" class="browser-img">
         </div>
-            
+ 
+        <div id="browser-url">
+            <img id="browser-url" class="browser-url">
+        </div>           
 
     </body>
 </html>

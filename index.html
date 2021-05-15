@@ -20,24 +20,23 @@
         input[type="file"] {
             display: none;
         }
-        .label-container {
-            resize: "auto";
-            position: fixed;
-            margin: auto;
-            width: 95%;
+        .header {
+            position: sticky;
+            top: 0; 
+            margin: 0;
+            height: 75px;
+            z-index: 9999;
+            width: 100%;
             vertical-align: middle;
             border: 1.5px solid rgba(2, 145, 170, 0.473);
-            border-radius: 12px;
-            background-color: rgba(240, 248, 255, 0.834);
-            display: inline-block;
-            padding-bottom: 100%; /* aspect ratio */
-            padding: 2px;
+            border-radius: 0px;
+            background-color: rgba(194, 220, 243, 0.884);
         }
         .custom-file-upload {
             margin: auto;
             width: 24%;
             vertical-align: middle;
-            font: 14px Arial, sans-serif;		
+            font: 14px sans-serif;		
             text-align: center;
             cursor: pointer;
             display: inline-block;
@@ -45,15 +44,18 @@
         .svg-container {
             margin: auto;
             display: inline-block;
-            position: relative;
+            /*position: relative;*/
+            position: sticky;
+            top:0;
             vertical-align: top;
         }
         .svg-content-responsive {
             vertical-align: top;
             display: inline-block;
-            position: absolute;
+            /*position: absolute;*/
             width: 98%;
-            top: 0x;
+            position: sticky;
+            top: 0;
             left: 0;
         }
         div.tooltip {	
@@ -66,7 +68,7 @@
             pointer-events: none;			
         }
         body {
-            padding: 0.5em;
+            margin: 0%;
         }
         #browser-container img {
             max-width: 98%;
@@ -76,47 +78,51 @@
             display: block;
         }
         #chart svg {
+            position: sticky;
+            top:0;
             margin: auto;
             max-width: 98%;
             display: block;
             overflow: visible;
         }
         .chart {
+            position: sticky;
+            top:0;
             margin: auto;
             max-width: 98%;
             display: block;
         }
     </style>
     <body>
-
-        <div id="label-container" class="label-container">
+        <!--THE HEADER SECTION-->
+        <div id="header" class="header">
             <!-- Initialize a select button -->
             <label class="custom-file-upload">
-                <code><b>Select target and query contig</b></code><br>
+                <b>Select target and query contig</b>
+                <br>
                 <select id="targetButton"></select>
                 <select id="queryButton"></select>
             </label>
             <!-- Initialize a select button -->
             <label class="custom-file-upload">
-                <code>Click to load your own data
-                    <br> Find out more at 
-                    <a href="https://mrvollger.github.io/rustybam/">rustybam stats</a>
-                    <input type="file" id="uploader">
-                </code>
+                Click to load your own data
+                <br> 
+                Find out more at 
+                <a href="https://mrvollger.github.io/rustybam/">rustybam stats</a>
+                <input type="file" id="uploader">
             </label>
             <!-- Initialize a select button -->
-            </label>
             <label class="custom-file-upload">
-                <code>Add <b>UCSC</b> snapshot</code><br>
+                Add <b>UCSC</b> snapshot
+                <br>
                 <input type=button onClick=reload(); value='Reload image'>
             </label>
             <!-- Initialize a select button -->
             <label class="custom-file-upload">
-                <code>Load your own 
-                    <a href="http://genome.ucsc.edu/goldenPath/help/hgSessionHelp.html">
-                        UCSC session
-                    </a>
-                </code>
+                Load your own 
+                <a href="http://genome.ucsc.edu/goldenPath/help/hgSessionHelp.html">
+                    UCSC session
+                </a>
                 <br>
                 <input type="text" id="UCSCuser" placeholder="UCSC user name" value="mrvollger">
                 <br>
@@ -126,24 +132,24 @@
 
 
         <!-- Create a div where the graph will take place -->
+        <script type ="text/javascript" src="filled_bezier.html"></script>
+        <script type ="text/javascript" src="D3miropeats.js"></script>
+        <script type ="text/javascript" src="main.js"></script>
         <div id="chart">
-            <script type ="text/javascript" src="filled_bezier.html"></script>
-            <script type ="text/javascript" src="D3miropeats.js"></script>
-            <script type ="text/javascript" src="main.js"></script>
             <script>
                 upload_button("uploader", load_dataset);
             </script>
         </div>
+            <div id="browser-container">
+                <img id="browser-img" class="browser-img">
+            </div>
+            <div id="browser-url">
+                <img id="browser-url" class="browser-url">
+            </div>     
+
+              
         <div id="chart2">
         </div>
-
-        <div id="browser-container">
-            <img id="browser-img" class="browser-img">
-        </div>
- 
-        <div id="browser-url">
-            <img id="browser-url" class="browser-url">
-        </div>           
 
     </body>
 </html>

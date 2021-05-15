@@ -1,7 +1,7 @@
 var chart_name="chart";
-var margin = {top: 100, right: 0, bottom: 40, left: 0};
+var margin = {top: 20, right: 0, bottom: 40, left: 0};
 var scale = 1.5;
-var height=Math.round(300*scale);
+var height=Math.round(200*scale);
 var width=Math.round(800*scale);
 
 var l_aln_data = [
@@ -276,21 +276,27 @@ function miropeats_d3(data){
     
     // add in the data 
     function draw_data(xz){
+        var st = Math.round( xz.domain()[0] );
+        var en = Math.round( xz.domain()[1] );
+        // filter for region of interest! 
+        var zoom_data = aln_data.filter(function(d) {
+            return d.c1_en >= st && d.c1_st <= en;
+        });
         // center the query contig
-        c2_offset = difference_in_mid_point(aln_data);
+        c2_offset = difference_in_mid_point(zoom_data);
 
         // add in the bezier curves
         container.selectAll('g.item')
-            .data(aln_data)
+            .data(zoom_data)
             .enter()
             .each(draw_alignment)
             .selectAll('path')
         
         // add contig bars
-        var xc1 = xz(aln_data[0].c1_len);
-        var xc2 = xz_offset(aln_data[0].c2_len);
-        var yc1 = yscale_d(aln_data[0].c1_nm);
-        var yc2 = yscale_d(aln_data[0].c2_nm);
+        var xc1 = xz(zoom_data[0].c1_len);
+        var xc2 = xz_offset(zoom_data[0].c2_len);
+        var yc1 = yscale_d(zoom_data[0].c1_nm);
+        var yc2 = yscale_d(zoom_data[0].c2_nm);
 
         const path = d3.path();
         path.moveTo(xz(0),yc1-label_margin); // c1 start
@@ -319,7 +325,7 @@ function miropeats_d3(data){
         d3.selectAll("svg > *").remove();
         draw_x_and_y_scale();
         draw_data(xz)
-    console.log(margin.left/width)
+        console.log(margin.left/width)
     }
 
 
@@ -428,17 +434,22 @@ function difference_in_mid_point(data){
     var mid_target = 0;
     var mid_query = 0;
     var max=0;
+    var total=0;
 
     data.map(function(d){
         var weight = (d.c2_en - d.c2_st);
-        if(weight > max){
-            max=weight;
-            mid_target= (d.c1_en + d.c1_st)/2;
-            mid_query= (d.c2_en + d.c2_st)/2;
-        }
+        //if(weight > max){
+        //    max=weight;
+            //mid_target= (d.c1_en + d.c1_st)/2;
+            //mid_query= (d.c2_en + d.c2_st)/2;
+        //}
+        mid_target+= weight*(d.c1_en + d.c1_st)/2;
+        mid_query+= weight*(d.c2_en + d.c2_st)/2;
+        total += weight;
     });
     //console.log(mid_target-mid_query);
-    return(  mid_target-mid_query  )
+    //return(  mid_target-mid_query  )
+    return(  (mid_target-mid_query)/total  )
 }
 
 function add_text(container){

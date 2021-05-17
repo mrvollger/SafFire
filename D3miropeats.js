@@ -1,8 +1,9 @@
 var chart_name="chart";
-var margin = {top: 20, right: 0, bottom: 40, left: 0};
+var margin = {top: 40, right: 0, bottom: 40, left: 0};
 var scale = 1.5;
 var height=Math.round(200*scale);
 var width=Math.round(800*scale);
+var INVERT = false; 
 
 var l_aln_data = [
           {c1_nm: "Chr 1", c1_st: 0, c1_en: 100, c1_len: 1000,
@@ -15,14 +16,18 @@ var q_name = "";
 var c2_offset = 0; // how much to offset the second contig to allow for centering 
 var yscale_d = "";
 var xscale = "";
-var alpha_scale = "";
 var xz =  "";
-var xz_offset = "";
+var xz_offset = xz;
+var alpha_scale = "";
 const label_margin = 10;
 const forward_color = "#2081f9";
 const reverse_color = "#f99820";
 
-
+// label format
+function label_fmt(d){
+    fmt = d3.format(",.0f")(d-c2_offset);
+    return(fmt);
+}
 
 // load dataset and create table
 function load_dataset(csv) {
@@ -39,7 +44,7 @@ function create_table(data) {
             c1_en: +d.reference_end,
             c1_len: +d.reference_length,
             strand: d.strand,
-            c2_nm: d["query_name"] + ":0-" + d3.format(".2s")(d["query_length"])+"bp",
+            c2_nm: "Query: " + d["query_name"],
             c2_st: +d.query_start,
             c2_en: +d.query_end,
             c2_len: +d.query_length,
@@ -52,7 +57,7 @@ function create_table(data) {
     miropeats_d3(l_aln_data);
 };
 // load in the t2t alignments as defualt 
-d3.tsv("datasets/GRCh38_to_T2T.CHM13.v1.1.tbl")
+d3.tsv("datasets/GRCh38_to_T2T.CHM13.v1.1_100k.tbl")
     .then(function(d) {   // Handle the resolved Promise
         return create_table(d);
     });
@@ -108,7 +113,7 @@ function miropeats_d3(data){
         .attr("width", "100%")
         .attr("viewBox", `0 0 ${width} ${height}`) // top, left, width, down
     
-    // xscale inital x scale
+    // target xscale inital x scale
     xscale = d3.scaleLinear()
             .domain([0,
                     d3.max(aln_data, function(d) { 
@@ -116,8 +121,14 @@ function miropeats_d3(data){
                     })])
             .range([margin.left, width - margin.right])
     xz = xscale; // define a zoomed version
+    
+    // query xscale inital x scale
     function xz_offset(d){
         return xz(d + c2_offset);
+    };
+    function offset(d){
+        fmt = label_fmt(d-c2_offset);
+        return(fmt);
     };
 
     // yscale
@@ -208,6 +219,7 @@ function miropeats_d3(data){
                     .duration(100)		
                     .style("opacity", .6);		
                 div.html(
+                            o_c2_st + "-" + o_c2_en + "<br>"+
                             d3.format(".1f")(o_c2_en/1000-o_c2_st/1000) + " kbp<br>"+
                             d3.format(".2f")(perid)+"%<br>" +
                             d3.format(".1f")(o_c1_en/1000-o_c1_st/1000) + " kbp<br>"
@@ -221,7 +233,7 @@ function miropeats_d3(data){
                         .attr('opacity', `${opacity}`);
                 // remove tooltip
                 div.transition()		
-                    .duration(10)		
+                    .duration(0)		
                     .style("opacity", 0);	
             })
         
@@ -261,6 +273,16 @@ function miropeats_d3(data){
         container.append("g")
             .call(xAxis, xz);
         
+        var xAxis2 = (g, x) => g
+            .attr('transform', `translate(0, ${margin.top-15})`)
+            .style("font", "11px helvetica")
+            .call(d3.axisTop(x)
+                .tickFormat(offset)
+                .ticks(10)
+            );
+        container.append("g")
+           .call(xAxis2, xz)
+        
         // draw the y axis
         container.append('g')
             .style("font", "16px helvetica")
@@ -280,7 +302,7 @@ function miropeats_d3(data){
         var en = Math.round( xz.domain()[1] );
         // filter for region of interest! 
         var zoom_data = aln_data.filter(function(d) {
-            return d.c1_en >= st && d.c1_st <= en;
+            return d.c1_en >= st - 10e6 && d.c1_st <= en + 10e6;
         });
         // center the query contig
         c2_offset = difference_in_mid_point(zoom_data);
@@ -433,22 +455,15 @@ function difference_in_mid_point(data){
     //console.log("finding mid point on the target");
     var mid_target = 0;
     var mid_query = 0;
-    var max=0;
     var total=0;
 
     data.map(function(d){
         var weight = (d.c2_en - d.c2_st);
-        //if(weight > max){
-        //    max=weight;
-            //mid_target= (d.c1_en + d.c1_st)/2;
-            //mid_query= (d.c2_en + d.c2_st)/2;
-        //}
         mid_target+= weight*(d.c1_en + d.c1_st)/2;
         mid_query+= weight*(d.c2_en + d.c2_st)/2;
         total += weight;
     });
     //console.log(mid_target-mid_query);
-    //return(  mid_target-mid_query  )
     return(  (mid_target-mid_query)/total  )
 }
 

@@ -57,7 +57,8 @@ function create_table(data) {
     miropeats_d3(l_aln_data);
 };
 // load in the t2t alignments as defualt 
-d3.tsv("datasets/GRCh38_to_T2T.CHM13.v1.1_100k.tbl")
+//d3.tsv("datasets/GRCh38_to_T2T.CHM13.v1.1_100k.tbl")
+d3.tsv("datasets/GRCh38_to_T2T.CHM13.v1.1.tbl")
     .then(function(d) {   // Handle the resolved Promise
         return create_table(d);
     });
@@ -219,7 +220,7 @@ function miropeats_d3(data){
                     .duration(100)		
                     .style("opacity", .6);		
                 div.html(
-                            o_c2_st + "-" + o_c2_en + "<br>"+
+                            //label_fmt(o_c2_st) + "-" + label_fmt(o_c2_en) + "<br>"+
                             d3.format(".1f")(o_c2_en/1000-o_c2_st/1000) + " kbp<br>"+
                             d3.format(".2f")(perid)+"%<br>" +
                             d3.format(".1f")(o_c1_en/1000-o_c1_st/1000) + " kbp<br>"

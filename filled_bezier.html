@@ -1,0 +1,93 @@
+ // my draw the bezier curves and fill
+function help_draw_alignment(c1_nm, o_c1_st, o_c1_en, c2_nm,
+        o_c2_st, o_c2_en,
+        perid, strand) {
+    
+    //
+    var c1_st = xz(o_c1_st), c1_en = xz(o_c1_en),
+    c2_st = xz_offset(o_c2_st), c2_en = xz_offset(o_c2_en);
+    
+    const path = d3.path(),
+    c1_h = yscale_d(c1_nm) - label_margin,//+yscale_d.bandwidth(),
+    c2_h = yscale_d(c2_nm) + label_margin, //yscale_d(c2_nm),
+    mid = (c1_h + c2_h) / 2; //yscale((c1_h+c2_h)/2);
+    container.append("path")
+        .attr("d", path)
+        .attr("color", "black")
+        .attr("stroke-width",2)
+        
+    var color = forward_color
+    if( strand == "-"){
+        var tmp = c2_st;
+        c2_st = c2_en;
+        c2_en = tmp;
+        var color = reverse_color;
+    };
+    // color alpha on identity 
+    var opacity = alpha_scale(perid);
+
+    // connect c1 start and end
+    path.moveTo(c1_st, c1_h);
+    path.lineTo(c1_en, c1_h);
+    // connect the ends ends
+    path.bezierCurveTo(c1_en, mid, c2_en, mid, c2_en, c2_h);
+    // at contig 2 end go to c2 start 
+    path.lineTo(c2_st, c2_h);
+    // make a bezier the goes from c2_st to c1_st 
+    path.bezierCurveTo(c2_st, mid, c1_st, mid, c1_st, c1_h);
+    // path.bezierCurveTo(cpx1, cpy1, cpx2, cpy2, x1, y1);
+    path.closePath();
+
+    // make the highlight regions 
+    container.append("path")
+        .attr("d", path)
+        .attr("stroke", "none")
+        .attr("fill", color)
+        .attr('opacity', `${opacity}`)
+        .on('mouseover', function (event) {
+            d3.select(this).transition()
+                    .duration(100)
+                    .attr('opacity', '1');
+        })
+        .on('mousemove', function(event){
+            // add the tooltip
+            div.transition()		
+                .duration(100)		
+                .style("opacity", .6);		
+            div.html(
+                        d3.format(".1f")(o_c2_en/1000-o_c2_st/1000) + " kbp<br>"+
+                        d3.format(".2f")(perid)+"%<br>" +
+                        d3.format(".1f")(o_c1_en/1000-o_c1_st/1000) + " kbp<br>"
+                    )	
+                .style("left", event.pageX -80 + "px")		
+                .style("top", event.pageY -20+ "px");
+        })
+        .on('mouseout', function () {
+            d3.select(this).transition()
+                    .duration(1)
+                    .attr('opacity', `${opacity}`);
+            // remove tooltip
+            div.transition()		
+                .duration(10)		
+                .style("opacity", 0);	
+        })
+    
+    if(aln_data.length < 0){ 
+        // target text         
+        container.append('text')
+            .attr("x",(c1_st+c1_en)/2).attr("y",c1_h+10)
+            .style("fill", "black")
+            .style("font-size", "10px")
+            .attr("text-anchor", "middle")
+            .attr("font-weight", "normal") 
+            .text(`${o_c1_st} - ${o_c1_en}`);
+        // query text
+        container.append('text')
+            .attr("x",(c2_st+c2_en)/2).attr("y",c2_h-5)
+            .style("fill", "black")
+            .style("font-size", "10px")
+            .attr("text-anchor", "middle")
+            .attr("font-weight", "normal") 
+            .text(`${o_c2_st} - ${o_c2_en}`);
+    }
+}

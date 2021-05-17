@@ -280,8 +280,9 @@ function miropeats_d3(data){
                 .tickFormat(offset)
                 .ticks(10)
             );
-        container.append("g")
-           .call(xAxis2, xz)
+        // TODO
+        //container.append("g")
+        //   .call(xAxis2, xz)
         
         // draw the y axis
         container.append('g')

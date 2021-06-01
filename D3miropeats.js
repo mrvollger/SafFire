@@ -31,9 +31,14 @@ function label_fmt(d){
 
 // load dataset and create table
 function load_dataset(csv) {
-    var data = d3.tsvParse(csv)
-    console.log(data[0]);
-    create_table(data);
+    console.log(csv);
+    d3.tsv(csv)
+        .then(function(d) {   // Handle the resolved Promise
+            return create_table(d);
+        });
+    //var data = d3.tsvParse(csv);
+    //console.log(data[0]);
+    //create_table(data);
 }
 
 function create_table(data) {
@@ -69,20 +74,45 @@ d3.tsv("datasets/GRCh38_to_T2T.CHM13.v1.1.tbl")
 // handle upload button
 function upload_button(el, callback) {
     var uploader = document.getElementById(el);  
-    var reader = new FileReader();
-  
+    var reader = new FileReader();  
+    
+    uploader.addEventListener("change", loadFile, false);  
+
+    function loadFile() {      
+      var file = document.querySelector('input[type=file]').files[0];      
+      reader.addEventListener("load", parseFile, false);
+      if (file) {
+        reader.readAsText(file);
+      }      
+    }
+    
+    function parseFile(){
+      //var doesColumnExist = false;
+      var data = d3.tsvParse(reader.result, function(d){
+        //doesColumnExist = d.hasOwnProperty("someColumn");
+        return d;   
+      });
+      console.log(data);
+      create_table(data);
+    }
+    /*var reader = new FileReader();
     reader.onload = function(e) {
       var contents = e.target.result;
       callback(contents);
     };
   
-    uploader.addEventListener("change", handleFiles, false);  
   
     function handleFiles() {
       d3.select("#table").text("loading...");
-      var file = this.files[0];
-      reader.readAsText(file);
-    };
+      var file = this.files[0].name;
+      console.log(file)
+      d3.tsv(file)
+        .then(function(d) {   // Handle the resolved Promise
+            return create_table(d);
+       });
+      //var text = reader.readAsText(file);
+      //console.log(text)
+    };*/
 };
 
 var queryButton = d3.select("#queryButton");

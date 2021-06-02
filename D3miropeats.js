@@ -33,18 +33,6 @@ function label_fmt(d){
     return(fmt);
 }
 
-// load dataset and create table
-function load_dataset(csv) {
-    console.log(csv);
-    d3.tsv(csv)
-        .then(function(d) {   // Handle the resolved Promise
-            return create_table(d);
-        });
-    //var data = d3.tsvParse(csv);
-    //console.log(data[0]);
-    //create_table(data);
-}
-
 function create_table(data) {
     l_aln_data = data.map(function(d){
         return {
@@ -74,7 +62,7 @@ d3.tsv("datasets/GRCh38_to_T2T.CHM13.v1.1.tbl")
 
 // read in bed_9 data
 function create_bed9(data) {
-    console.log(data)
+    console.log("creating bed data")
     bed9_data = data.map(function(d){
         return {
             ct: d.ct,
@@ -88,7 +76,8 @@ function create_bed9(data) {
         };
     });
 };
-d3.tsv("datasets/Mel_dup_dupmasker_colors.bed")
+//d3.tsv("datasets/Mel_dup_dupmasker_colors.bed")
+d3.tsv("datasets/chm13_v1.1_plus38Y_dupmasker_colors.bed")
     .then(function(d) {   // Handle the resolved Promise
         return create_bed9(d);
     });
@@ -97,14 +86,13 @@ d3.tsv("datasets/Mel_dup_dupmasker_colors.bed")
 
 
 // handle upload button
-function upload_button(el, callback) {
+function upload_button(el) {
     var uploader = document.getElementById(el);  
     var reader = new FileReader();  
-    
     uploader.addEventListener("change", loadFile, false);  
 
     function loadFile() {      
-      var file = document.querySelector('input[type=file]').files[0];      
+      var file = document.querySelector('#uploader').files[0];      
       reader.addEventListener("load", parseFile, false);
       if (file) {
         reader.readAsText(file);
@@ -114,31 +102,42 @@ function upload_button(el, callback) {
     function parseFile(){
       //var doesColumnExist = false;
       var data = d3.tsvParse(reader.result, function(d){
-        //doesColumnExist = d.hasOwnProperty("someColumn");
         return d;   
       });
-      console.log(data);
+      console.log("upload button parse");
       create_table(data);
     }
-    /*var reader = new FileReader();
-    reader.onload = function(e) {
-      var contents = e.target.result;
-      callback(contents);
-    };
-  
-  
-    function handleFiles() {
-      d3.select("#table").text("loading...");
-      var file = this.files[0].name;
-      console.log(file)
-      d3.tsv(file)
-        .then(function(d) {   // Handle the resolved Promise
-            return create_table(d);
-       });
-      //var text = reader.readAsText(file);
-      //console.log(text)
-    };*/
 };
+// handle upload bed
+function uploadbed(el) {
+    console.log("in upload_bed: " + el);
+    var beduploader = document.getElementById(el);  
+    var bed_reader = new FileReader();  
+    beduploader.addEventListener("change", loadBedFile, false);  
+
+    function loadBedFile() {      
+      console.log("in loadBedFile");
+      var bedfile = document.querySelector('#uploaderbed').files[0];
+      bed_reader.addEventListener("load", parseBedFile, false);
+      console.log("in loadBedFile: before reading bedfile text");
+      if (bedfile) {
+        console.log("in loadBedFile: reading bedfile text");
+        bed_reader.readAsText(bedfile);
+      }      
+    }
+    
+    function parseBedFile(){
+      console.log("in upload_bed parser");
+      var bed = "ct\tst\ten\tname\tscore\tstrand\ttst\tten\tcolor\n"+bed_reader.result;
+      var data = d3.tsvParse(bed, function(d){
+        return d;   
+      });
+      console.log("upload bed parse");
+      console.log(data[0]);
+      create_bed9(data);
+    }
+};
+
 
 var queryButton = d3.select("#queryButton");
 var targetButton = d3.select("#targetButton");
@@ -344,15 +343,21 @@ function miropeats_d3(data){
         container.append("path")
             .attr("d", path)
             .attr("color", "black")
-            .attr("stroke-width",2)
-         
+            .attr("stroke-width",2);
+
+        var start = xz(d.st);
+        var end = xz(d.en);
+        if(d.strand=="-"){
+            start = xz(d.en);
+            end = xz(d.st);
+        }
         // connect c1 start and end
         var y = height - margin.bottom/1.5;
         var tri_width = 5;
-        path.moveTo(xz(d.st), y-tri_width );
-        path.lineTo(xz(d.st), y+tri_width );
-        path.lineTo(xz(d.en), y );
-        path.lineTo(xz(d.st), y-tri_width );
+        path.moveTo(start, y-tri_width );
+        path.lineTo(start, y+tri_width );
+        path.lineTo(end, y );
+        path.lineTo(start, y-tri_width );
         path.closePath();
 
         // make the highlight regions 
@@ -360,8 +365,6 @@ function miropeats_d3(data){
             .attr("d", path)
             .attr("stroke", "none")
             .attr("fill", d3.rgb("rgb("+ d.color+")"))
-        console.log(d.color)
- 
     }
 
     function draw_x_and_y_scale(){
@@ -413,13 +416,16 @@ function miropeats_d3(data){
         
         // draw bed9
         var zoom_bed_9 = bed9_data.filter(function(d) {
-            return d.ct == t_name && d.en >= st - 10e6 && d.st <= en + 10e6;
+            return d.ct == t_name && d.en >= st && d.st <= en;
         });
-        container.selectAll('g.item2')
-            .data(zoom_bed_9)
-            .enter()
-            .each(draw_bed)
-            .selectAll('path')
+        if( zoom_bed_9.length < 2000 ){
+            container.selectAll('g.item2')
+                .data(zoom_bed_9)
+                .enter()
+                .each(draw_bed)
+                .selectAll('path')
+        } else {
+        }
 
         // filter for region of interest! 
         var zoom_data = aln_data.filter(function(d) {
@@ -468,7 +474,6 @@ function miropeats_d3(data){
         d3.selectAll("svg > *").remove();
         draw_x_and_y_scale();
         draw_data(xz)
-        console.log(margin.left/width)
     }
 
 
@@ -573,7 +578,6 @@ function new_target_selector(new_data){
 
 
 function difference_in_mid_point(data){
-    //console.log("finding mid point on the target");
     var mid_target = 0;
     var mid_query = 0;
     var total=0;
@@ -584,7 +588,6 @@ function difference_in_mid_point(data){
         mid_query+= weight*(d.c2_en + d.c2_st)/2;
         total += weight;
     });
-    //console.log(mid_target-mid_query);
     return(  (mid_target-mid_query)/total  )
 }
 

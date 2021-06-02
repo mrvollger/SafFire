@@ -116,7 +116,7 @@
                 Click to load your own bed9 data
                 <br> 
                 for the reference 
-                <input type="file" id="uploader2">
+                <input type="file" id="uploaderbed">
             </label>
             <!-- Initialize a select button -->
             <label class="custom-file-upload">
@@ -150,7 +150,10 @@
         <script type ="text/javascript" src="D3miropeats.js"></script>
         <div id="chart">
             <script>
-                upload_button("uploader", load_dataset);
+                upload_button("uploader");
+            </script>
+            <script>
+                uploadbed("uploaderbed");
             </script>
         </div>
             <div id="browser-container">

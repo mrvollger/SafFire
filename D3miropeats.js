@@ -1,7 +1,7 @@
 var chart_name="chart";
-var margin = {top: 40, right: 0, bottom: 40, left: 0};
+var margin = {top: 40, right: 0, bottom: 40, left: 40};
 var scale = 1.5;
-var height=Math.round(200*scale);
+var height=Math.round(250*scale);
 var width=Math.round(800*scale);
 var INVERT = false; 
 
@@ -10,11 +10,15 @@ var l_aln_data = [
            c2_nm: "Chr 2", c2_st: 20, c2_en: 120, c2_len: 1000,
            id: 90, strand: "+"},
       ];
+var bed9_data = [
+    {ct: "chr1", st:0, en:50000000, name:"Acro1", score:500, strand:"+", tst:0, ten:50000000, color:"200,0,0"},
+];
 // thing I want to be global
 var t_name = "";
 var q_name = "";
 var c2_offset = 0; // how much to offset the second contig to allow for centering 
 var yscale_d = "";
+var yscale_c = "";
 var xscale = "";
 var xz =  "";
 var xz_offset = xz;
@@ -66,6 +70,27 @@ function create_table(data) {
 d3.tsv("datasets/GRCh38_to_T2T.CHM13.v1.1.tbl")
     .then(function(d) {   // Handle the resolved Promise
         return create_table(d);
+    });
+
+// read in bed_9 data
+function create_bed9(data) {
+    console.log(data)
+    bed9_data = data.map(function(d){
+        return {
+            ct: d.ct,
+            st: +d.st,
+            en: +d.en,
+            name: d.name,
+            strand: d.strand,
+            tst: +d.tst,
+            ten: +d.ten,
+            color: d.color
+        };
+    });
+};
+d3.tsv("datasets/Mel_dup_dupmasker_colors.bed")
+    .then(function(d) {   // Handle the resolved Promise
+        return create_bed9(d);
     });
 
 
@@ -132,7 +157,7 @@ function miropeats_d3(data){
 
     // filter for contig of interest! 
     var aln_data = data.filter(function (e) {
-        return e.c1_nm == t_name && e.c2_nm == q_name;
+        return e.c1_nm == t_name && e.c2_nm == q_name && e.id > 0; 
     });
 
     var ct_names = [q_name, t_name];
@@ -165,10 +190,17 @@ function miropeats_d3(data){
     // yscale
     var yscale_d = d3.scaleBand()
             .domain([t_name, q_name])
-            .range([height - margin.bottom, margin.top])
+            .range([ 0.8 * height - margin.bottom, margin.top])
             .paddingInner(1)
             .align(0);
+
+    // perid scale
+    var yscale_c = d3.scaleLinear()
+            .domain([d3.min(aln_data, function(d) { return d.id }),
+                     d3.max(aln_data, function(d) { return d.id })])
+            .range([height - margin.bottom, height * 0.8 - margin.bottom + label_margin]);
     
+
     // opacity scale
     alpha_scale = d3.scaleLinear()
             .domain([d3.min(aln_data, function(d) { return d.id }),
@@ -201,7 +233,9 @@ function miropeats_d3(data){
         //
         var c1_st = xz(o_c1_st), c1_en = xz(o_c1_en),
         c2_st = xz_offset(o_c2_st), c2_en = xz_offset(o_c2_en);
-        
+        var y_perid = yscale_c(perid);
+
+
         const path = d3.path(),
         c1_h = yscale_d(c1_nm) - label_margin,//+yscale_d.bandwidth(),
         c2_h = yscale_d(c2_nm) + label_margin, //yscale_d(c2_nm),
@@ -232,6 +266,7 @@ function miropeats_d3(data){
         path.bezierCurveTo(c2_st, mid, c1_st, mid, c1_st, c1_h);
         // path.bezierCurveTo(cpx1, cpy1, cpx2, cpy2, x1, y1);
         path.closePath();
+
 
         // make the highlight regions 
         container.append("path")
@@ -286,10 +321,47 @@ function miropeats_d3(data){
                 .attr("font-weight", "normal") 
                 .text(`${o_c2_st} - ${o_c2_en}`);
         }
+
+
+        // add in the perid line
+        const per_id_path = d3.path()
+        per_id_path.moveTo(c1_st, y_perid);
+        per_id_path.lineTo(c1_en, y_perid);
+        per_id_path.closePath()
+        container.append("path")
+            .attr("d", per_id_path)
+            .attr("stroke", "black")
+            .attr("z-index", -10000);
+
     }
     // format the d as input for drawing the alignment
     function draw_alignment(d, i){
         help_draw_alignment(d.c1_nm, d.c1_st, d.c1_en, d.c2_nm, d.c2_st, d.c2_en, d.id, d.strand);
+    }
+
+    function draw_bed(d, i){
+        const path = d3.path();
+        container.append("path")
+            .attr("d", path)
+            .attr("color", "black")
+            .attr("stroke-width",2)
+         
+        // connect c1 start and end
+        var y = height - margin.bottom/1.5;
+        var tri_width = 5;
+        path.moveTo(xz(d.st), y-tri_width );
+        path.lineTo(xz(d.st), y+tri_width );
+        path.lineTo(xz(d.en), y );
+        path.lineTo(xz(d.st), y-tri_width );
+        path.closePath();
+
+        // make the highlight regions 
+        container.append("path")
+            .attr("d", path)
+            .attr("stroke", "none")
+            .attr("fill", d3.rgb("rgb("+ d.color+")"))
+        console.log(d.color)
+ 
     }
 
     function draw_x_and_y_scale(){
@@ -317,13 +389,19 @@ function miropeats_d3(data){
         
         // draw the y axis
         container.append('g')
-            .style("font", "16px helvetica")
+            .style("font", "10px helvetica")
             .attr('transform', `translate(0, 0)`)
             .attr("opacity", 1)
             .attr("fill", "black")
             .attr("stroke-width", 0)
             .call(d3.axisRight(yscale_d));
         
+        container.append('g')
+            .style("font", "8px helvetica")
+            .attr('transform', `translate(0, 0)`)
+            .call(d3.axisRight(yscale_c)
+                .ticks(7)
+            );
     };
     draw_x_and_y_scale();
     
@@ -332,6 +410,17 @@ function miropeats_d3(data){
     function draw_data(xz){
         var st = Math.round( xz.domain()[0] );
         var en = Math.round( xz.domain()[1] );
+        
+        // draw bed9
+        var zoom_bed_9 = bed9_data.filter(function(d) {
+            return d.ct == t_name && d.en >= st - 10e6 && d.st <= en + 10e6;
+        });
+        container.selectAll('g.item2')
+            .data(zoom_bed_9)
+            .enter()
+            .each(draw_bed)
+            .selectAll('path')
+
         // filter for region of interest! 
         var zoom_data = aln_data.filter(function(d) {
             return d.c1_en >= st - 10e6 && d.c1_st <= en + 10e6;

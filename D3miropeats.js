@@ -609,3 +609,28 @@ function add_text(container){
                 .attr("font-weight", "normal") 
                 .text(`${o_c2_st} - ${o_c2_en}`);
 }
+
+
+d3.select('button').on('click', function() {
+    console.log("button!!!");
+    l_aln_data = l_aln_data.map(function(d){
+        var s = "+";
+        if(d.strand == "+"){
+            s="-";
+        }
+        return {
+            c1_nm: d.c1_nm,
+            c1_st: +d.c1_st,
+            c1_en: +d.c1_en,
+            c1_len: +d.c1_len,
+            strand: s,
+            c2_nm: d.c2_nm,
+            c2_st: d.c2_len - d.c2_en,
+            c2_en: d.c2_len - d.c2_st,
+            c2_len: +d.c2_len,
+            id: +d.id,
+        };
+    });
+    d3.selectAll("svg").remove()
+    miropeats_d3(l_aln_data);
+});

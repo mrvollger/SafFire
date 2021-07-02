@@ -38,7 +38,12 @@ function create_table(data) {
         var id = d.perID_by_events;
         if (id == "NA" | id == "0"| id == "") {
             id = "100";
-        } 
+        }
+        m = +d.matches;	mm = +d.mismatches;
+        if( m + mm < 1){
+            id="0"    
+        }
+
         return {
             c1_nm: d["#reference_name"],
             c1_st: +d.reference_start,
@@ -160,7 +165,7 @@ function miropeats_d3(data){
 
     // filter for contig of interest! 
     var aln_data = data.filter(function (e) {
-        return e.c1_nm == t_name && e.c2_nm == q_name && e.id > 0; 
+        return e.c1_nm == t_name && e.c2_nm == q_name && e.id > 0 && Math.abs(e.c1_en - e.c1_st) > 1 && Math.abs(e.c2_en - e.c2_st) > 1; 
     });
 
     var ct_names = [q_name, t_name];

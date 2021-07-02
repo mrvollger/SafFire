@@ -35,6 +35,10 @@ function label_fmt(d){
 
 function create_table(data) {
     l_aln_data = data.map(function(d){
+        var id = d.perID_by_events;
+        if (id == "NA" | id == "0"| id == "") {
+            id = "100";
+        } 
         return {
             c1_nm: d["#reference_name"],
             c1_st: +d.reference_start,
@@ -45,7 +49,7 @@ function create_table(data) {
             c2_st: +d.query_start,
             c2_en: +d.query_end,
             c2_len: +d.query_length,
-            id: +d.perID_by_events,
+            id: +id,
         };
     });
     var svg = d3.select("#"+chart_name);

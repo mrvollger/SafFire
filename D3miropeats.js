@@ -533,7 +533,7 @@ function reload() {
     var user = document.getElementById("UCSCuser").value;
     var UCSCsession = document.getElementById("UCSCsession").value;
     console.log(user + " " + UCSCsession);
-    var start = "http://genome.ucsc.edu/cgi-bin/hgRenderTracks?"
+    var start = "https://genome.ucsc.edu/cgi-bin/hgRenderTracks?"
     var session = "hgS_doOtherUser=submit&hgS_otherUserName=" + user + "&hgS_otherUserSessionName=" + UCSCsession + "&"
     var b_st = Math.round(xz.domain()[0]);
     var b_en = Math.round(xz.domain()[1]);

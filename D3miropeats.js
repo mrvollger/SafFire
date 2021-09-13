@@ -66,7 +66,8 @@ function create_table(data) {
 };
 // load in the t2t alignments as defualt 
 //d3.tsv("datasets/GRCh38_to_T2T.CHM13.v1.1_100k.tbl")
-d3.tsv("datasets/GRCh38_to_T2T.CHM13.v1.1.tbl")
+// d3.tsv("datasets/GRCh38_to_T2T.CHM13.v1.1.tbl")
+d3.tsv("datasets/GRCh38_to_T2T.CHM13.v1.0_mm2_v2.22.tbl")
     .then(function (d) {   // Handle the resolved Promise
         return create_table(d);
     });
@@ -648,3 +649,6 @@ d3.select('button').on('click', function () {
     d3.selectAll("svg").remove()
     miropeats_d3(l_aln_data);
 });
+
+// https://genome.ucsc.edu/cgi-bin/hgRenderTracks?hgS_doOtherUser=submit&hgS_otherUserName=mrvollger&hgS_otherUserSessionName=T2T&position=chr1%3A0-248956422&pix=935
+// https://genome.ucsc.edu/cgi-bin/hgRenderTracks?hgS_doOtherUser=submit&hgS_otherUserName=mrvollger&hgS_otherUserSessionName=F&position=chr1%3A0-248956422&pix=920

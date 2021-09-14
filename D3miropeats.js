@@ -13,7 +13,7 @@ var l_aln_data = [
     },
 ];
 var bed9_data = [
-    { ct: "chr1", st: 0, en: 50000000, name: "Acro1", score: 500, strand: "+", tst: 0, ten: 50000000, color: "200,0,0" },
+    { ct: "chr1", st: 0, en: 500, name: "Acro1", score: 500, strand: "+", tst: 0, ten: 500, color: "200,0,0" },
 ];
 // thing I want to be global
 var t_name = "";
@@ -209,7 +209,7 @@ function miropeats_d3(data) {
     var yscale_c = d3.scaleLinear()
         .domain([d3.min(aln_data, function (d) { return d.id }),
         d3.max(aln_data, function (d) { return d.id })])
-        .range([height - margin.bottom, height * 0.8 - margin.bottom + label_margin]);
+        .range([height, height - 2* margin.bottom + label_margin]);
 
 
     // opacity scale
@@ -235,6 +235,7 @@ function miropeats_d3(data) {
         .style("border-width", "2px")
         .style("border-radius", "5px")
         .style("padding", "5px")
+
 
     // my draw the bezier curves and fill
     function help_draw_alignment(c1_nm, o_c1_st, o_c1_en, c2_nm,
@@ -300,9 +301,9 @@ function miropeats_d3(data) {
                     d3.format(".1f")(o_c2_en / 1000 - o_c2_st / 1000) + " kbp<br>" +
                     d3.format(".2f")(perid) + "%<br>" +
                     d3.format(".1f")(o_c1_en / 1000 - o_c1_st / 1000) + " kbp<br>" +
-                    " <br> " +
-                    "q_st: " + d3.format(".0f")(o_c2_st) + " <br>" +
-                    "q_en: " + d3.format(".0f")(o_c2_en) + " <br>" 
+                    " <br> "
+                    //"q_st: " + d3.format(".0f")(o_c2_st) + " <br>" +
+                    //"q_en: " + d3.format(".0f")(o_c2_en) + " <br>" 
                 )
                     .style("left", event.pageX - 80 + "px")
                     .style("top", event.pageY - 20 + "px");
@@ -367,7 +368,7 @@ function miropeats_d3(data) {
             end = xz(d.st);
         }
         // connect c1 start and end
-        var y = height - margin.bottom / 1.5;
+        var y = height - margin.bottom*2 ;
         var tri_width = 5;
         path.moveTo(start, y - tri_width);
         path.lineTo(start, y + tri_width);
@@ -385,7 +386,7 @@ function miropeats_d3(data) {
     function draw_x_and_y_scale() {
         // draw the x axis 
         var xAxis = (g, x) => g
-            .attr('transform', `translate(0, ${height - 20})`)
+            .attr('transform', `translate(0, ${height*0.8-margin.bottom})`)
             .style("font", "11px helvetica")
             .call(d3.axisBottom(x)
                 .ticks(10)
@@ -420,6 +421,7 @@ function miropeats_d3(data) {
             .call(d3.axisRight(yscale_c)
                 .ticks(7)
             );
+        
     };
     draw_x_and_y_scale();
 
@@ -428,12 +430,52 @@ function miropeats_d3(data) {
     function draw_data(xz) {
         var st = Math.round(xz.domain()[0]);
         var en = Math.round(xz.domain()[1]);
+        var coords = `${t_name}:${d3.format(",")(st+1)}-${d3.format(",")(en)}`;
+        d3.selectAll('.coordinates').remove();
+        // define the coordinate box
+        var coordinates = d3.select("body").append("div")
+            .attr("class", "coordinates")
+        coordinates.text(coords)
+            .html(`<b> ${coords} </b>`)
+            .on("click", function(){
+                coordinates.select();
+                document.execCommand("copy");
+                console.log("copied");
+            })
+            /*
+            .attr("x", xz((st+en)/2) ).attr("y", margin.top - 10)
+            .style("fill", "black")
+            .style("font-size", "10px")
+            .attr("text-anchor", "middle")
+            .attr("font-weight", "normal")
+            .text(
+            )
+            .on('mousemove', function (event) {
+                // add the tooltip
+                coordinates.transition()
+                    .duration(100)
+                    .style("opacity", .8);
+                coordinates.html(
+                    "<b>Click to copy coordinates</b>" + 
+                )
+                    .style("left", event.pageX -50 + "px")
+                    .style("top", event.pageY + "px");
+            })
+            .on('mouseout', function () {
+                d3.select(this).transition()
+                    .duration(1)
+                    .attr('opacity', 1);
+                // remove tooltip
+                coordinates.transition()
+                    .duration(0)
+                    .style("opacity", 0);
+            })*/
 
         // draw bed9
         var zoom_bed_9 = bed9_data.filter(function (d) {
             return d.ct == t_name && d.en >= st && d.st <= en;
         });
-        if (zoom_bed_9.length < 2000) {
+        if (zoom_bed_9.length < 3000) {
             container.selectAll('g.item2')
                 .data(zoom_bed_9)
                 .enter()

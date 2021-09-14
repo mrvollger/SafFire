@@ -439,37 +439,35 @@ function miropeats_d3(data) {
             .html(`<b> ${coords} </b>`)
             .on("click", function(){
                 coordinates.select();
-                document.execCommand("copy");
-                console.log("copied");
-            })
-            /*
-            .attr("x", xz((st+en)/2) ).attr("y", margin.top - 10)
-            .style("fill", "black")
-            .style("font-size", "10px")
-            .attr("text-anchor", "middle")
-            .attr("font-weight", "normal")
-            .text(
-            )
+                navigator.clipboard.writeText(`${t_name}:${st+1}-${en}`).then(function() {
+                    console.log('Async: Copying to clipboard was successful!');
+                  }, function(err) {
+                    console.error('Async: Could not copy text: ', err);
+                  });
+            }) 
             .on('mousemove', function (event) {
                 // add the tooltip
-                coordinates.transition()
+                div.transition()
                     .duration(100)
                     .style("opacity", .8);
-                coordinates.html(
-                    "<b>Click to copy coordinates</b>" + 
-                )
+                div.html(
+                    "<b>Click to copy coordinates</b>" 
+                    )
                     .style("left", event.pageX -50 + "px")
-                    .style("top", event.pageY + "px");
+                    .style("top", event.pageY + "px")
+                    .style("border-width", "0px")
+                    .style("width", "200px")
+                    .style("height", "15px");
             })
             .on('mouseout', function () {
                 d3.select(this).transition()
                     .duration(1)
                     .attr('opacity', 1);
                 // remove tooltip
-                coordinates.transition()
+                div.transition()
                     .duration(0)
                     .style("opacity", 0);
-            })*/
+            })
 
         // draw bed9
         var zoom_bed_9 = bed9_data.filter(function (d) {

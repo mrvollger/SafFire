@@ -453,7 +453,7 @@ function miropeats_d3(data) {
                 div.html(
                     "<b>Click to copy coordinates</b>" 
                     )
-                    .style("left", event.pageX -50 + "px")
+                    .style("left", event.pageX -100 + "px")
                     .style("top", event.pageY + "px")
                     .style("border-width", "0px")
                     .style("width", "200px")

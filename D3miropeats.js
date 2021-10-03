@@ -574,7 +574,36 @@ function miropeats_d3(data) {
     }
 
 
-
+    // check for url updates
+    function parse_url_change(){
+        const parsedHash = new URLSearchParams(
+            window.location.hash.substr(1) // skip the first char (#)
+        );
+        var url = parsedHash.get("url");
+        console.log(`url: ${url}`);
+        if( url != null) {
+            d3.tsv(url)
+                .then(function (d) {   // Handle the resolved Promise
+                    return create_table(d);
+                }
+            );
+        }
+        if(parsedHash.get("pos") != null) {
+            console.log(parsedHash.get("pos"));
+            //d3.zoomIdentity.translate(xz(1), xz(1000));
+            xz = d3.scaleLinear()
+                .domain([0,100000])
+                .range([margin.left, width - margin.right]);
+            d3.selectAll("svg > *").remove();
+            draw_x_and_y_scale();
+            draw_data(xz)
+        }
+        // has to be last
+        if( parsedHash.get("save") != null) {
+            save_svg();
+        }
+    }
+    window.addEventListener("hashchange", parse_url_change);
 }
 
 miropeats_d3(l_aln_data);
@@ -719,25 +748,3 @@ function save_svg(){
     downloadLink.click();
     document.body.removeChild(downloadLink);
 }
-
-// check for url updates
-function parse_url_change(){
-    const parsedHash = new URLSearchParams(
-        window.location.hash.substr(1) // skip the first char (#)
-      );
-    var url = parsedHash.get("url");
-    console.log(`url: ${url}`);
-    if( url != null) {
-        d3.tsv(url)
-            .then(function (d) {   // Handle the resolved Promise
-                return create_table(d);
-            }
-        );
-    }
-    // has to be last
-    if( parsedHash.get("save") != null) {
-        save_svg();
-    }
-    console.log(parsedHash.get("pos"));
-}
-window.addEventListener("hashchange", parse_url_change);

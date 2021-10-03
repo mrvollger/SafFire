@@ -1,5 +1,8 @@
 var chart_name = "chart";
-var margin = { top: 40, right: 0, bottom: 40, left: 40 };
+// WARNING: LEFT AND RIGHT MARGIN MUST BE EQUAL AMOUNTS
+var margin = { top: 40, right: 40, bottom: 40, left: 40 };
+console.assert(margin.left === margin.right,
+    {right: margin.right, left: margin.left, errorMsg: "MARGINS NOT EQUAL"});
 var scale = 1.5;
 var height = Math.round(250 * scale);
 var width = Math.round(800 * scale);
@@ -180,12 +183,12 @@ function miropeats_d3(data) {
         .attr("width", "100%")
         .attr("viewBox", `0 0 ${width} ${height}`) // top, left, width, down
 
+    var max_len = d3.max(data, function (d) {
+                return d3.max([d.c1_len, d.c2_len])
+            }); 
     // target xscale inital x scale
     xscale = d3.scaleLinear()
-        .domain([0,
-            d3.max(aln_data, function (d) {
-                return d3.max([d.c1_len, d.c2_len])
-            })])
+        .domain([0,max_len])
         .range([margin.left, width - margin.right])
     xz = xscale; // define a zoomed version
 
@@ -221,7 +224,7 @@ function miropeats_d3(data) {
 
     // zoom scale 
     const zoom = d3.zoom()
-        .scaleExtent([1, 100000])
+        .scaleExtent([1, max_len])
         .extent([[margin.left, 0], [width - margin.right, height]])
         .translateExtent([[margin.left, -Infinity], [width - margin.right, Infinity]])
         .on("zoom", zoomed);
@@ -429,8 +432,8 @@ function miropeats_d3(data) {
 
     // add in the data 
     function draw_data(xz) {
-        var st = Math.round(xz.domain()[0]);
-        var en = Math.round(xz.domain()[1]);
+        var st = Math.max(0, Math.round(xz.domain()[0]));
+        var en = Math.min(aln_data[0].c1_len, Math.round(xz.domain()[1]));
         var coords = `${t_name}:${d3.format(",")(st+1)}-${d3.format(",")(en)}`;
         d3.selectAll('.coordinates').remove();
         // define the coordinate box
@@ -470,15 +473,6 @@ function miropeats_d3(data) {
                     .style("opacity", 0);
             })
         
-        // Add the coordinates to the url
-        // window.history.pushState("object or string", "Title", `/pos=${t_name}:${st+1}-${en}`);
-        if ('URLSearchParams' in window) {
-            var searchParams = new URLSearchParams(window.location.search)
-            searchParams.set("pos", `${t_name}:${st+1}-${en}`);
-            var newRelativePathQuery = window.location.pathname + '#' + searchParams.toString();
-            history.pushState(null, '', newRelativePathQuery);
-        }
-
         // draw bed9
         var zoom_bed_9 = bed9_data.filter(function (d) {
             return d.ct == t_name && d.en >= st && d.st <= en;
@@ -546,9 +540,10 @@ function miropeats_d3(data) {
 
     // change things when selector is used 
     targetButton.on("change", function (d) {
-        var target_name = this.value;
+        var sel = document.getElementById('targetButton');
+        var t_name = sel.options[sel.selectedIndex].value;
         // filter the second button
-        filter_query_button_by_target(target_name);
+        filter_query_button_by_target(t_name);
         // update the drawings
         change_contigs();
     })
@@ -558,10 +553,11 @@ function miropeats_d3(data) {
     })
 
     function change_contigs() {
+        var sel = document.getElementById('targetButton');
+        var t_name = sel.options[sel.selectedIndex].value;
         var sel = document.getElementById('queryButton');
         var q_name = sel.options[sel.selectedIndex].value
-        var sel = document.getElementById('targetButton');
-        var t_name = sel.options[sel.selectedIndex].value
+        
         console.log("selected option query:" + q_name);
         console.log("selected option target:" + t_name);
 
@@ -589,14 +585,27 @@ function miropeats_d3(data) {
             );
         }
         if(parsedHash.get("pos") != null) {
-            console.log(parsedHash.get("pos"));
-            //d3.zoomIdentity.translate(xz(1), xz(1000));
-            xz = d3.scaleLinear()
-                .domain([0,100000])
-                .range([margin.left, width - margin.right]);
-            d3.selectAll("svg > *").remove();
-            draw_x_and_y_scale();
-            draw_data(xz)
+            var x0=1e6; var x1=x0+2e7;
+            [chrm, pos] = parsedHash.get("pos").split(":");
+            console.log(`chr: ${chrm}    pos: ${pos}`);
+            if (chrm != t_name){
+                let element = document.getElementById('targetButton');
+                element.value = chrm;
+                // filter the second button
+                filter_query_button_by_target(chrm);
+                // update the drawings
+                change_contigs();
+            }
+            [st, x1] = pos.split("-");
+            var x0 = st - 1; 
+            console.log(`x0: ${x0}    x1: ${x1}`);
+            container.call(zoom).transition().duration(3000).call(
+              zoom.transform,
+              d3.zoomIdentity
+                .translate( (width)/2, height / 2)
+                .scale( (max_len) / (x1-x0) )
+                .translate(-(xscale(x0) + xscale(x1)) / 2, height)
+              );
         }
         // has to be last
         if( parsedHash.get("save") != null) {
@@ -604,6 +613,17 @@ function miropeats_d3(data) {
         }
     }
     window.addEventListener("hashchange", parse_url_change);
+
+    // Add the coordinates to the url
+    // window.history.pushState("object or string", "Title", `/pos=${t_name}:${st+1}-${en}`);
+    var st = Math.round(xz.domain()[0]);
+    var en = Math.round(xz.domain()[1]);
+    if ('URLSearchParams' in window) {
+        var searchParams = new URLSearchParams(window.location.search)
+        searchParams.set("pos", `${t_name}:${st+1}-${en}`);
+        var newRelativePathQuery = window.location.pathname + '#' + searchParams.toString();
+        history.pushState(null, '', newRelativePathQuery);
+    }
 }
 
 miropeats_d3(l_aln_data);

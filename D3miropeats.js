@@ -462,9 +462,7 @@ function miropeats_d3(data) {
                     )
                     .style("left", event.pageX -100 + "px")
                     .style("top", event.pageY + "px")
-                    .style("border-width", "0px")
-                    .style("width", "200px")
-                    .style("height", "15px");
+                    .style("border-width", "0px");
             })
             .on('mouseout', function () {
                 d3.select(this).transition()

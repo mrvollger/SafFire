@@ -483,7 +483,7 @@ function miropeats_d3(data) {
         var zoom_bed_9 = bed9_data.filter(function (d) {
             return d.ct == t_name && d.en >= st && d.st <= en;
         });
-        if (zoom_bed_9.length < 3000) {
+        if (zoom_bed_9.length < 2000) {
             container.selectAll('g.item2')
                 .data(zoom_bed_9)
                 .enter()

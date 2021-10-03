@@ -394,6 +394,7 @@ function miropeats_d3(data) {
 
         container.append("g")
             .call(xAxis, xz);
+        
 
         var xAxis2 = (g, x) => g
             .attr('transform', `translate(0, ${margin.top - 15})`)
@@ -468,6 +469,15 @@ function miropeats_d3(data) {
                     .duration(0)
                     .style("opacity", 0);
             })
+        
+        // Add the coordinates to the url
+        // window.history.pushState("object or string", "Title", `/pos=${t_name}:${st+1}-${en}`);
+        if ('URLSearchParams' in window) {
+            var searchParams = new URLSearchParams(window.location.search)
+            searchParams.set("pos", `${t_name}:${st+1}-${en}`);
+            var newRelativePathQuery = window.location.pathname + '#' + searchParams.toString();
+            history.pushState(null, '', newRelativePathQuery);
+        }
 
         // draw bed9
         var zoom_bed_9 = bed9_data.filter(function (d) {
@@ -690,5 +700,38 @@ d3.select('button').on('click', function () {
     miropeats_d3(l_aln_data);
 });
 
-// https://genome.ucsc.edu/cgi-bin/hgRenderTracks?hgS_doOtherUser=submit&hgS_otherUserName=mrvollger&hgS_otherUserSessionName=T2T&position=chr1%3A0-248956422&pix=935
-// https://genome.ucsc.edu/cgi-bin/hgRenderTracks?hgS_doOtherUser=submit&hgS_otherUserName=mrvollger&hgS_otherUserSessionName=F&position=chr1%3A0-248956422&pix=920
+function save_svg(){
+    var svgEl = d3.selectAll("svg").node();//#"+chart_name);
+    console.log(svgEl);
+    //var svgData = document.getElementById("#"+chart_name); 
+    //var svgData = $(`#${chart_name}`)[0].outerHTML;
+    //var svgData = document.getElementById("#"+chart_name);
+    //console.log(svgData);
+    //var svgBlob = new Blob([svgData], {type:"image/svg+xml;charset=utf-8"});
+    //var svgUrl = URL.createObjectURL(svgBlob);
+    svgEl.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    var svgData = svgEl.outerHTML;
+    var preface = '<?xml version="1.0" standalone="no"?>\r\n';
+    var svgBlob = new Blob([preface, svgData], {type:"image/svg+xml;charset=utf-8"});
+    var svgUrl = URL.createObjectURL(svgBlob);
+
+    var downloadLink = document.createElement("a");
+    downloadLink.href = svgUrl;
+    downloadLink.download = "SafFire.svg";
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+}
+
+// check for url updates
+function parse_url_change(){
+    const parsedHash = new URLSearchParams(
+        window.location.hash.substr(1) // skip the first char (#)
+      );
+    if( parsedHash.get("save") != null) {
+        save_svg();
+    }
+    console.log(parsedHash.get("pos"));
+    console.log("parse_url_change");
+}
+window.addEventListener("hashchange", parse_url_change);

@@ -10,6 +10,7 @@ var INVERT = false;
 var container = "";
 var max_len = "";
 var zoom = "";
+var MAX_BED_ITEMS = 1000;
 
 var l_aln_data = [
     {
@@ -479,7 +480,7 @@ function miropeats_d3(data) {
         var zoom_bed_9 = bed9_data.filter(function (d) {
             return d.ct == t_name && d.en >= st && d.st <= en;
         });
-        if (zoom_bed_9.length < 2000) {
+        if (zoom_bed_9.length < MAX_BED_ITEMS) {
             container.selectAll('g.item2')
                 .data(zoom_bed_9)
                 .enter()
@@ -601,6 +602,10 @@ function parse_url_change(){
                 return create_table(d);
             }
         );
+    }
+    var max_bed_items = parsedHash.get("max_bed_items");
+    if ( max_bed_items != null) {
+        MAX_BED_ITEMS = max_bed_items;
     }
     if(parsedHash.get("pos") != null) {
         var x0=1e6; var x1=x0+2e7;

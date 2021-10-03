@@ -701,14 +701,11 @@ d3.select('button').on('click', function () {
 });
 
 function save_svg(){
+    var st = Math.round(xz.domain()[0]);
+    var en = Math.round(xz.domain()[1]);
+    
     var svgEl = d3.selectAll("svg").node();//#"+chart_name);
     console.log(svgEl);
-    //var svgData = document.getElementById("#"+chart_name); 
-    //var svgData = $(`#${chart_name}`)[0].outerHTML;
-    //var svgData = document.getElementById("#"+chart_name);
-    //console.log(svgData);
-    //var svgBlob = new Blob([svgData], {type:"image/svg+xml;charset=utf-8"});
-    //var svgUrl = URL.createObjectURL(svgBlob);
     svgEl.setAttribute("xmlns", "http://www.w3.org/2000/svg");
     var svgData = svgEl.outerHTML;
     var preface = '<?xml version="1.0" standalone="no"?>\r\n';
@@ -717,7 +714,7 @@ function save_svg(){
 
     var downloadLink = document.createElement("a");
     downloadLink.href = svgUrl;
-    downloadLink.download = "SafFire.svg";
+    downloadLink.download = `SafFire_${t_name}:${st+1}-${en}.svg`;
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);
@@ -728,6 +725,14 @@ function parse_url_change(){
     const parsedHash = new URLSearchParams(
         window.location.hash.substr(1) // skip the first char (#)
       );
+    if( parsedHash.get("url") != null) {
+       d3.tsv(parsedHash.get("url"))
+            .then(function (d) {   // Handle the resolved Promise
+                return create_table(d);
+            }
+        );
+    }
+    // has to be last
     if( parsedHash.get("save") != null) {
         save_svg();
     }

@@ -7,11 +7,14 @@ var scale = 1.5;
 var height = Math.round(250 * scale);
 var width = Math.round(800 * scale);
 var INVERT = false;
+var container = "";
+var max_len = "";
+var zoom = "";
 
 var l_aln_data = [
     {
         c1_nm: "Chr 1", c1_st: 0, c1_en: 100, c1_len: 1000,
-        c2_nm: "Chr 2", c2_st: 20, c2_en: 120, c2_len: 1000,
+        c2_nm: "Chr 2", c2_st: 20, c2_en: 120, c2_len: 2000,
         id: 90, strand: "+"
     },
 ];
@@ -178,12 +181,12 @@ function miropeats_d3(data) {
     console.log(ct_names);
 
     // set up the view box
-    var container = d3.select("#" + chart_name)
+    container = d3.select("#" + chart_name)
         .append("svg")
         .attr("width", "100%")
         .attr("viewBox", `0 0 ${width} ${height}`) // top, left, width, down
 
-    var max_len = d3.max(data, function (d) {
+    max_len = d3.max(data, function (d) {
                 return d3.max([d.c1_len, d.c2_len])
             }); 
     // target xscale inital x scale
@@ -223,7 +226,7 @@ function miropeats_d3(data) {
 
 
     // zoom scale 
-    const zoom = d3.zoom()
+    zoom = d3.zoom()
         .scaleExtent([1, max_len])
         .extent([[margin.left, 0], [width - margin.right, height]])
         .translateExtent([[margin.left, -Infinity], [width - margin.right, Infinity]])
@@ -536,97 +539,98 @@ function miropeats_d3(data) {
     }
 
 
-
-
-    // change things when selector is used 
-    targetButton.on("change", function (d) {
-        var sel = document.getElementById('targetButton');
-        var t_name = sel.options[sel.selectedIndex].value;
-        // filter the second button
-        filter_query_button_by_target(t_name);
-        // update the drawings
-        change_contigs();
-    })
-
-    queryButton.on("change", function (d) {
-        change_contigs();
-    })
-
-    function change_contigs() {
-        var sel = document.getElementById('targetButton');
-        var t_name = sel.options[sel.selectedIndex].value;
-        var sel = document.getElementById('queryButton');
-        var q_name = sel.options[sel.selectedIndex].value
-        
-        console.log("selected option query:" + q_name);
-        console.log("selected option target:" + t_name);
-
-        d3.selectAll("svg").remove();
-        // filter for contig of interest! 
-        var aln_data = l_aln_data.filter(function (e) {
-            return e.c1_nm == t_name && e.c2_nm == q_name;
-        });
-        miropeats_d3(aln_data)
-    }
-
-
-    // check for url updates
-    function parse_url_change(){
-        const parsedHash = new URLSearchParams(
-            window.location.hash.substr(1) // skip the first char (#)
-        );
-        var url = parsedHash.get("url");
-        console.log(`url: ${url}`);
-        if( url != null) {
-            d3.tsv(url)
-                .then(function (d) {   // Handle the resolved Promise
-                    return create_table(d);
-                }
-            );
-        }
-        if(parsedHash.get("pos") != null) {
-            var x0=1e6; var x1=x0+2e7;
-            [chrm, pos] = parsedHash.get("pos").split(":");
-            console.log(`chr: ${chrm}    pos: ${pos}`);
-            if (chrm != t_name){
-                let element = document.getElementById('targetButton');
-                element.value = chrm;
-                // filter the second button
-                filter_query_button_by_target(chrm);
-                // update the drawings
-                change_contigs();
-            }
-            [st, x1] = pos.split("-");
-            var x0 = st - 1; 
-            console.log(`x0: ${x0}    x1: ${x1}`);
-            container.call(zoom).transition().duration(3000).call(
-              zoom.transform,
-              d3.zoomIdentity
-                .translate( (width)/2, height / 2)
-                .scale( (max_len) / (x1-x0) )
-                .translate(-(xscale(x0) + xscale(x1)) / 2, height)
-              );
-        }
-        // has to be last
-        if( parsedHash.get("save") != null) {
-            save_svg();
-        }
-    }
-    window.addEventListener("hashchange", parse_url_change);
-
+    
     // Add the coordinates to the url
     // window.history.pushState("object or string", "Title", `/pos=${t_name}:${st+1}-${en}`);
     var st = Math.round(xz.domain()[0]);
     var en = Math.round(xz.domain()[1]);
-    if ('URLSearchParams' in window) {
+    /*if ('URLSearchParams' in window) {
         var searchParams = new URLSearchParams(window.location.search)
         searchParams.set("pos", `${t_name}:${st+1}-${en}`);
         var newRelativePathQuery = window.location.pathname + '#' + searchParams.toString();
         history.pushState(null, '', newRelativePathQuery);
-    }
+    }*/
+}
+miropeats_d3(l_aln_data);
+
+
+// change things when selector is used 
+targetButton.on("change", function (d) {
+    var sel = document.getElementById('targetButton');
+    var t_name = sel.options[sel.selectedIndex].value;
+    // filter the second button
+    filter_query_button_by_target(t_name);
+    // update the drawings
+    change_contigs();
+})
+
+queryButton.on("change", function (d) {
+    change_contigs();
+});
+
+function change_contigs() {
+    var sel = document.getElementById('targetButton');
+    var t_name = sel.options[sel.selectedIndex].value;
+    var sel = document.getElementById('queryButton');
+    var q_name = sel.options[sel.selectedIndex].value
+    
+    console.log("selected option query:" + q_name);
+    console.log("selected option target:" + t_name);
+
+    d3.selectAll("svg").remove();
+    // filter for contig of interest! 
+    var aln_data = l_aln_data.filter(function (e) {
+        return e.c1_nm == t_name && e.c2_nm == q_name;
+    });
+    miropeats_d3(aln_data)
 }
 
-miropeats_d3(l_aln_data);
+
+// check for url updates
+function parse_url_change(){
+    const parsedHash = new URLSearchParams(
+        window.location.hash.substr(1) // skip the first char (#)
+    );
+    var url = parsedHash.get("url");
+    console.log(`url: ${url}`);
+    if( url != null) {
+        d3.tsv(url)
+            .then(function (d) {   // Handle the resolved Promise
+                return create_table(d);
+            }
+        );
+    }
+    if(parsedHash.get("pos") != null) {
+        var x0=1e6; var x1=x0+2e7;
+        [chrm, pos] = parsedHash.get("pos").split(":");
+        console.log(`chr: ${chrm}    pos: ${pos} maxlen: ${max_len}`);
+        if (chrm != t_name){
+            let element = document.getElementById('targetButton');
+            element.value = chrm;
+            // filter the second button
+            filter_query_button_by_target(chrm);
+            // update the drawings
+            change_contigs();
+        }
+        [st, x1] = pos.split("-");
+        var x0 = st - 1; 
+        console.log(`x0: ${x0}    x1: ${x1} maxlen: ${max_len}`);
+        container.call(zoom).transition().duration(3000).call(
+            zoom.transform,
+            d3.zoomIdentity
+            .translate( (width)/2, height / 2)
+            .scale( (max_len) / (x1-x0) )
+            .translate(-(xscale(x0) + xscale(x1)) / 2, height)
+            );
+    }
+    // has to be last
+    if( parsedHash.get("save") != null) {
+        save_svg();
+    }
+}
+window.addEventListener("hashchange", parse_url_change);
+
+
 
 
 function reload() {

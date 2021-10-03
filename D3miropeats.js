@@ -725,8 +725,10 @@ function parse_url_change(){
     const parsedHash = new URLSearchParams(
         window.location.hash.substr(1) // skip the first char (#)
       );
-    if( parsedHash.get("url") != null) {
-       d3.tsv(parsedHash.get("url"))
+    var url = parsedHash.get("url");
+    console.log(`url: ${url}`);
+    if( url != null) {
+        d3.tsv(url)
             .then(function (d) {   // Handle the resolved Promise
                 return create_table(d);
             }
@@ -737,6 +739,5 @@ function parse_url_change(){
         save_svg();
     }
     console.log(parsedHash.get("pos"));
-    console.log("parse_url_change");
 }
 window.addEventListener("hashchange", parse_url_change);

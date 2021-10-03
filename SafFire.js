@@ -640,6 +640,9 @@ function parse_url_change(){
     else if( parsedHash.get("save") != null) {
         save_svg();
     }
+    if( parsedHash.get("view") != null) {
+        view_svg();
+    }
 }
 window.addEventListener("hashchange", parse_url_change);
 
@@ -766,8 +769,20 @@ d3.select('button').on('click', function () {
     miropeats_d3(l_aln_data);
 });
 
+function view_svg(){
+    var st = Math.round(xz.domain()[0]);
+    var en = Math.round(xz.domain()[1]);
+    var svgEl = d3.selectAll("svg").node();//#"+chart_name);
+    console.log(svgEl);
+    svgEl.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    var svgData = svgEl.outerHTML;
+    var preface = '<?xml version="1.0" standalone="no"?>\r\n';
+    var svgBlob = new Blob([preface, svgData], {type:"image/svg+xml;charset=utf-8"});
+    var svgUrl = URL.createObjectURL(svgBlob);
+    window.location = (svgUrl) 
+}
+
 function save_svg(){
-    sleep(2000);
     var st = Math.round(xz.domain()[0]);
     var en = Math.round(xz.domain()[1]);
     

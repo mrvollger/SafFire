@@ -1,6 +1,6 @@
 # [SafFire](https://mrvollger.github.io/SafFire/)
 
-[SafFire](https://mrvollger.github.io/SafFire/) is an interactive tool for vizualizing Miropeats genome wise.
+[SafFire](https://mrvollger.github.io/SafFire/) is an interactive tool for visualizing Miropeats genome wise.
 
 Please visit the website to use: [https://mrvollger.github.io/SafFire/](https://mrvollger.github.io/SafFire/)
 

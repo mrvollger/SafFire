@@ -69,6 +69,7 @@ function create_table(data) {
     svg.selectAll("*").remove();
     new_target_selector(l_aln_data);
     miropeats_d3(l_aln_data);
+    parse_url_change();
 };
 // load in the t2t alignments as defualt 
 //d3.tsv("datasets/GRCh38_to_T2T.CHM13.v1.1_100k.tbl")
@@ -555,7 +556,7 @@ miropeats_d3(l_aln_data);
 // change things when selector is used 
 targetButton.on("change", function (d) {
     var sel = document.getElementById('targetButton');
-    var t_name = sel.options[sel.selectedIndex].value;
+    t_name = sel.options[sel.selectedIndex].value;
     // filter the second button
     filter_query_button_by_target(t_name);
     // update the drawings
@@ -568,9 +569,9 @@ queryButton.on("change", function (d) {
 
 function change_contigs() {
     var sel = document.getElementById('targetButton');
-    var t_name = sel.options[sel.selectedIndex].value;
+    t_name = sel.options[sel.selectedIndex].value;
     var sel = document.getElementById('queryButton');
-    var q_name = sel.options[sel.selectedIndex].value
+    q_name = sel.options[sel.selectedIndex].value
     
     console.log("selected option query:" + q_name);
     console.log("selected option target:" + t_name);
@@ -635,7 +636,6 @@ function parse_url_change(){
         save_svg();
     }
 }
-parse_url_change();
 window.addEventListener("hashchange", parse_url_change);
 
 

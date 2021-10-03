@@ -11,6 +11,7 @@ var container = "";
 var max_len = "";
 var zoom = "";
 var MAX_BED_ITEMS = 1000;
+var draw_bed = function (d) {}
 
 var l_aln_data = [
     {
@@ -22,6 +23,8 @@ var l_aln_data = [
 var bed9_data = [
     { ct: "chr1", st: 0, en: 500, name: "Acro1", score: 500, strand: "+", tst: 0, ten: 500, color: "200,0,0" },
 ];
+var zoom_bed_9 = bed9_data;
+
 // thing I want to be global
 var t_name = "";
 var q_name = "";
@@ -477,7 +480,7 @@ function miropeats_d3(data) {
             })
         
         // draw bed9
-        var zoom_bed_9 = bed9_data.filter(function (d) {
+        zoom_bed_9 = bed9_data.filter(function (d) {
             return d.ct == t_name && d.en >= st && d.st <= en;
         });
         if (zoom_bed_9.length < MAX_BED_ITEMS) {
@@ -486,8 +489,8 @@ function miropeats_d3(data) {
                 .enter()
                 .each(draw_bed)
                 .selectAll('path')
-        } else {
-        }
+        } 
+
 
         // filter for region of interest! 
         var zoom_data = aln_data.filter(function (d) {
@@ -554,6 +557,7 @@ function miropeats_d3(data) {
 miropeats_d3(l_aln_data);
 
 
+
 // change things when selector is used 
 targetButton.on("change", function (d) {
     var sel = document.getElementById('targetButton');
@@ -604,8 +608,9 @@ function parse_url_change(){
         );
     }
     var max_bed_items = parsedHash.get("max_bed_items");
-    if ( max_bed_items != null) {
+    if ( max_bed_items != null && max_bed_items != MAX_BED_ITEMS) {
         MAX_BED_ITEMS = max_bed_items;
+        draw_bed();
     }
     if(parsedHash.get("pos") != null) {
         var x0=1e6; var x1=x0+2e7;

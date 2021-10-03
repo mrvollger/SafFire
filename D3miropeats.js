@@ -583,6 +583,9 @@ function change_contigs() {
     miropeats_d3(aln_data)
 }
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 // check for url updates
 function parse_url_change(){
@@ -613,16 +616,22 @@ function parse_url_change(){
         [st, x1] = pos.split("-");
         var x0 = st - 1; 
         console.log(`x0: ${x0}    x1: ${x1} maxlen: ${max_len}`);
-        container.call(zoom).transition().duration(3000).call(
-            zoom.transform,
-            d3.zoomIdentity
-            .translate( (width)/2, height / 2)
-            .scale( (max_len) / (x1-x0) )
-            .translate(-(xscale(x0) + xscale(x1)) / 2, height)
-            );
+        container.call(zoom).transition()
+            .duration(1000)
+            .call(
+                zoom.transform,
+                d3.zoomIdentity
+                .translate( (width)/2, height / 2)
+                .scale( (max_len) / (x1-x0) )
+                .translate(-(xscale(x0) + xscale(x1)) / 2, height)
+            )
+            .on("end", function() {
+                if( parsedHash.get("save") != null ) {
+                    save_svg();
+                }
+            });
     }
-    // has to be last
-    if( parsedHash.get("save") != null) {
+    else if( parsedHash.get("save") != null) {
         save_svg();
     }
 }
@@ -752,6 +761,7 @@ d3.select('button').on('click', function () {
 });
 
 function save_svg(){
+    sleep(2000);
     var st = Math.round(xz.domain()[0]);
     var en = Math.round(xz.domain()[1]);
     

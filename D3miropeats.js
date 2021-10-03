@@ -635,6 +635,7 @@ function parse_url_change(){
         save_svg();
     }
 }
+parse_url_change();
 window.addEventListener("hashchange", parse_url_change);
 
 

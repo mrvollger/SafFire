@@ -696,7 +696,9 @@ function filter_query_button_by_target(target_name) {
     var filtered = l_aln_data.filter(function (d) {
         return d.c1_nm == target_name;
     });
-    var uniq_q = [...new Set(filtered.map(d => d.c2_nm))];
+    var uniq_q = order_q_names(filtered);
+    // uniq_q.reverse();
+    // var uniq_q = [...new Set(filtered.map(d => d.c2_nm))];
     uniq_q.push("All");
     // remove options previously in the q selector
     d3.selectAll("#queryButton").selectAll("option").remove()

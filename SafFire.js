@@ -170,20 +170,26 @@ new_target_selector(l_aln_data);
 
 function miropeats_d3(data) {
     var aln_data = data;
-    //var ct_names = d3.set(aln_data, function(d){return d.c2_nm;});
     var t_names = [...new Set(data.map(d => d.c1_nm))];
     var q_names = [...new Set(data.map(d => d.c2_nm))];
 
     t_name = t_names[0];
-    q_name = q_names[0];
+    //q_name = q_names[0];
+    var sel = document.getElementById('queryButton');
+    q_name = sel.options[sel.selectedIndex].value
 
+    //q_names = [q_name];
     // filter for contig of interest! 
     var aln_data = data.filter(function (e) {
-        return e.c1_nm == t_name && e.c2_nm == q_name && e.id > 0 && Math.abs(e.c1_en - e.c1_st) > 1 && Math.abs(e.c2_en - e.c2_st) > 1;
+        if(q_name=="All"){
+            return e.c1_nm == t_name && e.id > 0 && Math.abs(e.c1_en - e.c1_st) > 1 && Math.abs(e.c2_en - e.c2_st) > 1;
+        } else {
+            return e.c1_nm == t_name && e.c2_nm == q_name && e.id > 0 && Math.abs(e.c1_en - e.c1_st) > 1 && Math.abs(e.c2_en - e.c2_st) > 1;
+        }
     });
 
-    var ct_names = [q_name, t_name];
-    console.log(ct_names);
+    q_names = order_q_names(aln_data);
+    console.log("q_names: " + q_names);
 
     // set up the view box
     container = d3.select("#" + chart_name)
@@ -191,7 +197,7 @@ function miropeats_d3(data) {
         .attr("width", "100%")
         .attr("viewBox", `0 0 ${width} ${height}`) // top, left, width, down
 
-    max_len = d3.max(data, function (d) {
+    max_len = d3.max(aln_data, function (d) {
                 return d3.max([d.c1_len, d.c2_len])
             }); 
     // target xscale inital x scale
@@ -209,12 +215,21 @@ function miropeats_d3(data) {
         return (fmt);
     };
 
+    other_y_poses = [];//Array(q_names.length).fill(margin.top).map(function (d, i) {d + i});
+    other_y_poses.push(0.8 * height - margin.bottom);
+    for (var i = 0; i < q_names.length; i++) {
+        other_y_poses.push( 1.5*margin.top - i * height/30 );
+    }
+
+    console.log("other_y_poses: " + other_y_poses);
     // yscale
-    var yscale_d = d3.scaleBand()
-        .domain([t_name, q_name])
-        .range([0.8 * height - margin.bottom, margin.top])
-        .paddingInner(1)
-        .align(0);
+    var yscale_d = d3.scaleOrdinal()//d3.scaleBand()
+        .domain([t_name].concat(q_names))
+        .range(other_y_poses)
+        //.paddingInner(1)
+        //.align(0);
+    console.log(yscale_d.domain());
+    console.log(yscale_d.range());
 
     // perid scale
     var yscale_c = d3.scaleLinear()
@@ -263,6 +278,7 @@ function miropeats_d3(data) {
             c1_h = yscale_d(c1_nm) - label_margin,//+yscale_d.bandwidth(),
             c2_h = yscale_d(c2_nm) + label_margin, //yscale_d(c2_nm),
             mid = (c1_h + c2_h) / 2; //yscale((c1_h+c2_h)/2);
+        //console.log(`${c1_h},${c2_h}:${c1_nm},${c2_nm}`);
         container.append("path")
             .attr("d", path)
             .attr("color", "black")
@@ -511,7 +527,7 @@ function miropeats_d3(data) {
         var xc2 = xz_offset(zoom_data[0].c2_len);
         var yc1 = yscale_d(zoom_data[0].c1_nm);
         var yc2 = yscale_d(zoom_data[0].c2_nm);
-
+        
         const path = d3.path();
         path.moveTo(xz(0), yc1 - label_margin); // c1 start
         path.lineTo(xc1, yc1 - label_margin); // go to c1 en
@@ -584,7 +600,7 @@ function change_contigs() {
     d3.selectAll("svg").remove();
     // filter for contig of interest! 
     var aln_data = l_aln_data.filter(function (e) {
-        return e.c1_nm == t_name && e.c2_nm == q_name;
+        return e.c1_nm == t_name //&& e.c2_nm == q_name;
     });
     miropeats_d3(aln_data)
 }
@@ -681,6 +697,7 @@ function filter_query_button_by_target(target_name) {
         return d.c1_nm == target_name;
     });
     var uniq_q = [...new Set(filtered.map(d => d.c2_nm))];
+    uniq_q.push("All");
     // remove options previously in the q selector
     d3.selectAll("#queryButton").selectAll("option").remove()
     // enter in the new data 
@@ -805,4 +822,28 @@ function save_svg(){
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);
+}
+
+
+
+function order_q_names(aln_data){
+    var dict = {};
+    for (var i = 0; i < aln_data.length; i++) {
+        var key = aln_data[i].c2_nm;
+        var value =  aln_data[i].c2_en - aln_data[i].c2_st;
+        if( !(key in dict)){
+            dict[key] = 0;
+        }
+        dict[key] = dict[key] + value;
+    }
+    // Create items array
+    var items = Object.keys(dict).map(function(key) {
+        return [key, dict[key]];
+     });
+    // Sort the array based on the second element
+    items.sort(function(first, second) {
+     return second[1] - first[1];
+    }); 
+
+    return items.map(function(d){return d[0]});
 }

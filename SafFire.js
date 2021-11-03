@@ -25,13 +25,15 @@ var l_aln_data = [
         id: 90, strand: "+"
     },
 ];
-var bed9_data = {"datasets/CenSat.bed": [
-    { ct: "chr1", st: 0, en: 500, name: "Acro1", score: 500, strand: "+", tst: 0, ten: 500, color: "200,0,0", file: 1 },
-]};
+var bed9_data = {
+    "datasets/CenSat.bed": [
+        { ct: "chr1", st: 0, en: 500, name: "Acro1", score: 500, strand: "+", tst: 0, ten: 500, color: "200,0,0", file: 1 },
+    ]
+};
 var zoom_bed_9 = bed9_data;
 var bed_yscale_mod = d3.scaleBand()//d3.scaleBand()
-        .domain(Object.keys(bed9_data))
-        .range([0, 25.0]);
+    .domain(Object.keys(bed9_data))
+    .range([0, 25.0]);
 
 // thing I want to be global
 var t_name = "";
@@ -86,16 +88,16 @@ function create_table(data) {
 // load in the t2t alignments as defualt 
 //d3.tsv("datasets/GRCh38_to_T2T.CHM13.v1.1_100k.tbl")
 // d3.tsv("datasets/GRCh38_to_T2T.CHM13.v1.1.tbl")
-var tbl_file="datasets/GRCh38_to_T2T.CHM13.v1.0_mm2_v2.22.tbl"
-var tbl_file="datasets/CHM1.tbl"
+var tbl_file = "datasets/GRCh38_to_T2T.CHM13.v1.0_mm2_v2.22.tbl"
+var tbl_file = "datasets/CHM1.tbl"
 d3.tsv(tbl_file)
     .then(function (d) {   // Handle the resolved Promise
         return create_table(d);
     });
 
 // read in bed_9 data
-function create_bed9(data,bed_file) {
-    console.log("creating bed data from "+ bed_file);
+function create_bed9(data, bed_file) {
+    console.log("creating bed data from " + bed_file);
     tmp_bed9_data = data.map(function (d) {
         return {
             ct: d.ct,
@@ -110,7 +112,7 @@ function create_bed9(data,bed_file) {
         };
     });
     bed9_data[bed_file] = tmp_bed9_data;
-    
+
     // bed data scale/offset
     console.log(Object.keys(bed9_data));
     bed_yscale_mod = d3.scaleBand()//d3.scaleBand()
@@ -118,16 +120,16 @@ function create_bed9(data,bed_file) {
         .range([0, 25.0]);
 };
 //d3.tsv("datasets/Mel_dup_dupmasker_colors.bed")
-var bed_file="datasets/chm13_v1.1_plus38Y_dupmasker_colors.bed"
-var bed_file="./datasets/DupMasker_plus_CHM1_PAV.bed";
-var bed_file="datasets/CHM1_PAV.bed"
-var bed_files=[
-    "datasets/CenSat.bed", 
+var bed_file = "datasets/chm13_v1.1_plus38Y_dupmasker_colors.bed"
+var bed_file = "./datasets/DupMasker_plus_CHM1_PAV.bed";
+var bed_file = "datasets/CHM1_PAV.bed"
+var bed_files = [
+    "datasets/CenSat.bed",
     "datasets/chm13_v1.1_plus38Y_dupmasker_colors.bed",
     "datasets/CHM1_PAV.bed"
 ]
-for(const bed_file of bed_files){
-    console.log("loading bed file: "+bed_file);
+for (const bed_file of bed_files) {
+    console.log("loading bed file: " + bed_file);
     d3.tsv(bed_file)
         .then(function (d) {   // Handle the resolved Promise
             return create_bed9(d, bed_file);
@@ -184,7 +186,8 @@ function uploadbed(el) {
         });
         console.log("upload bed parse");
         console.log(data[0]);
-        create_bed9(data);
+        create_bed9(data, BED_COUNT);
+        BED_COUNT = BED_COUNT + 1;
     }
 };
 
@@ -260,10 +263,10 @@ function miropeats_d3(data) {
 
     // perid scale
     var yscale_c = d3.scaleLinear()
-        .domain([d3.max([89, d3.min(aln_data, function (d) { return d.id })] ),
+        .domain([d3.max([89, d3.min(aln_data, function (d) { return d.id })]),
         d3.max(aln_data, function (d) { return d.id })])
         .range([height, height - 2 * margin.bottom + label_margin]);
-    
+
     // opacity scale
     alpha_scale = d3.scaleLinear()
         .domain([d3.min(aln_data, function (d) { return d.id }),
@@ -423,7 +426,7 @@ function miropeats_d3(data) {
         // connect c1 start and end
         var y = height - margin.bottom * 2;
         var y = yscale_d(d.ct) + bed_yscale_mod(d.file) //+ 3*label_margin//+yscale_d.bandwidth(),
-        var tri_width = bed_yscale_mod.bandwidth()/2.0;
+        var tri_width = bed_yscale_mod.bandwidth() / 2.0;
         path.moveTo(start, y - tri_width);
         path.lineTo(start, y + tri_width);
         path.lineTo(end, y);
@@ -524,7 +527,7 @@ function miropeats_d3(data) {
             })
 
         // draw bed9
-        for(var key in bed9_data) {
+        for (var key in bed9_data) {
             var tmp_bed9_data = bed9_data[key];
             zoom_bed_9 = tmp_bed9_data.filter(function (d) {
                 return d.ct == t_name && d.en >= st && d.st <= en;

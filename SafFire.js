@@ -1,17 +1,22 @@
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 var chart_name = "chart";
 // WARNING: LEFT AND RIGHT MARGIN MUST BE EQUAL AMOUNTS
 var margin = { top: 40, right: 40, bottom: 40, left: 40 };
 console.assert(margin.left === margin.right,
-    {right: margin.right, left: margin.left, errorMsg: "MARGINS NOT EQUAL"});
+    { right: margin.right, left: margin.left, errorMsg: "MARGINS NOT EQUAL" });
 var scale = 1.5;
-var height = Math.round(250 * scale);
+var height = Math.round(275 * scale);
 var width = Math.round(800 * scale);
 var INVERT = false;
 var container = "";
 var max_len = "";
 var zoom = "";
 var MAX_BED_ITEMS = 1000;
-var draw_bed = function (d) {}
+var BED_COUNT = 1;
+var draw_bed = function (d) { }
 
 var l_aln_data = [
     {
@@ -20,10 +25,13 @@ var l_aln_data = [
         id: 90, strand: "+"
     },
 ];
-var bed9_data = [
-    { ct: "chr1", st: 0, en: 500, name: "Acro1", score: 500, strand: "+", tst: 0, ten: 500, color: "200,0,0" },
-];
+var bed9_data = {"datasets/CenSat.bed": [
+    { ct: "chr1", st: 0, en: 500, name: "Acro1", score: 500, strand: "+", tst: 0, ten: 500, color: "200,0,0", file: 1 },
+]};
 var zoom_bed_9 = bed9_data;
+var bed_yscale_mod = d3.scaleBand()//d3.scaleBand()
+        .domain(Object.keys(bed9_data))
+        .range([0, 25.0]);
 
 // thing I want to be global
 var t_name = "";
@@ -78,15 +86,17 @@ function create_table(data) {
 // load in the t2t alignments as defualt 
 //d3.tsv("datasets/GRCh38_to_T2T.CHM13.v1.1_100k.tbl")
 // d3.tsv("datasets/GRCh38_to_T2T.CHM13.v1.1.tbl")
-d3.tsv("datasets/GRCh38_to_T2T.CHM13.v1.0_mm2_v2.22.tbl")
+var tbl_file="datasets/GRCh38_to_T2T.CHM13.v1.0_mm2_v2.22.tbl"
+var tbl_file="datasets/CHM1.tbl"
+d3.tsv(tbl_file)
     .then(function (d) {   // Handle the resolved Promise
         return create_table(d);
     });
 
 // read in bed_9 data
-function create_bed9(data) {
-    console.log("creating bed data")
-    bed9_data = data.map(function (d) {
+function create_bed9(data,bed_file) {
+    console.log("creating bed data from "+ bed_file);
+    tmp_bed9_data = data.map(function (d) {
         return {
             ct: d.ct,
             st: +d.st,
@@ -95,18 +105,35 @@ function create_bed9(data) {
             strand: d.strand,
             tst: +d.tst,
             ten: +d.ten,
-            color: d.color
+            color: d.color,
+            file: bed_file
         };
     });
+    bed9_data[bed_file] = tmp_bed9_data;
+    
+    // bed data scale/offset
+    console.log(Object.keys(bed9_data));
+    bed_yscale_mod = d3.scaleBand()//d3.scaleBand()
+        .domain(Object.keys(bed9_data))
+        .range([0, 25.0]);
 };
 //d3.tsv("datasets/Mel_dup_dupmasker_colors.bed")
-d3.tsv("datasets/chm13_v1.1_plus38Y_dupmasker_colors.bed")
-    .then(function (d) {   // Handle the resolved Promise
-        return create_bed9(d);
-    });
-
-
-
+var bed_file="datasets/chm13_v1.1_plus38Y_dupmasker_colors.bed"
+var bed_file="./datasets/DupMasker_plus_CHM1_PAV.bed";
+var bed_file="datasets/CHM1_PAV.bed"
+var bed_files=[
+    "datasets/CenSat.bed", 
+    "datasets/chm13_v1.1_plus38Y_dupmasker_colors.bed",
+    "datasets/CHM1_PAV.bed"
+]
+for(const bed_file of bed_files){
+    console.log("loading bed file: "+bed_file);
+    d3.tsv(bed_file)
+        .then(function (d) {   // Handle the resolved Promise
+            return create_bed9(d, bed_file);
+        });
+    console.log(bed9_data);
+}
 
 // handle upload button
 function upload_button(el) {
@@ -181,7 +208,7 @@ function miropeats_d3(data) {
     //q_names = [q_name];
     // filter for contig of interest! 
     var aln_data = data.filter(function (e) {
-        if(q_name=="All"){
+        if (q_name == "All") {
             return e.c1_nm == t_name && e.id > 0 && Math.abs(e.c1_en - e.c1_st) > 1 && Math.abs(e.c2_en - e.c2_st) > 1;
         } else {
             return e.c1_nm == t_name && e.c2_nm == q_name && e.id > 0 && Math.abs(e.c1_en - e.c1_st) > 1 && Math.abs(e.c2_en - e.c2_st) > 1;
@@ -198,11 +225,11 @@ function miropeats_d3(data) {
         .attr("viewBox", `0 0 ${width} ${height}`) // top, left, width, down
 
     max_len = d3.max(aln_data, function (d) {
-                return d3.max([d.c1_len, d.c2_len])
-            }); 
+        return d3.max([d.c1_len, d.c2_len])
+    });
     // target xscale inital x scale
     xscale = d3.scaleLinear()
-        .domain([0,max_len])
+        .domain([0, max_len])
         .range([margin.left, width - margin.right])
     xz = xscale; // define a zoomed version
 
@@ -218,7 +245,7 @@ function miropeats_d3(data) {
     other_y_poses = [];//Array(q_names.length).fill(margin.top).map(function (d, i) {d + i});
     other_y_poses.push(0.8 * height - margin.bottom);
     for (var i = 0; i < q_names.length; i++) {
-        other_y_poses.push( 1.5*margin.top - i * height/30 );
+        other_y_poses.push(1.5 * margin.top - i * height / 30);
     }
 
     console.log("other_y_poses: " + other_y_poses);
@@ -226,18 +253,17 @@ function miropeats_d3(data) {
     var yscale_d = d3.scaleOrdinal()//d3.scaleBand()
         .domain([t_name].concat(q_names))
         .range(other_y_poses)
-        //.paddingInner(1)
-        //.align(0);
+    //.paddingInner(1)
+    //.align(0);
     console.log(yscale_d.domain());
     console.log(yscale_d.range());
 
     // perid scale
     var yscale_c = d3.scaleLinear()
-        .domain([d3.min(aln_data, function (d) { return d.id }),
+        .domain([d3.max([89, d3.min(aln_data, function (d) { return d.id })] ),
         d3.max(aln_data, function (d) { return d.id })])
-        .range([height, height - 2* margin.bottom + label_margin]);
-
-
+        .range([height, height - 2 * margin.bottom + label_margin]);
+    
     // opacity scale
     alpha_scale = d3.scaleLinear()
         .domain([d3.min(aln_data, function (d) { return d.id }),
@@ -395,8 +421,9 @@ function miropeats_d3(data) {
             end = xz(d.st);
         }
         // connect c1 start and end
-        var y = height - margin.bottom*2 ;
-        var tri_width = 5;
+        var y = height - margin.bottom * 2;
+        var y = yscale_d(d.ct) + bed_yscale_mod(d.file) //+ 3*label_margin//+yscale_d.bandwidth(),
+        var tri_width = bed_yscale_mod.bandwidth()/2.0;
         path.moveTo(start, y - tri_width);
         path.lineTo(start, y + tri_width);
         path.lineTo(end, y);
@@ -408,12 +435,13 @@ function miropeats_d3(data) {
             .attr("d", path)
             .attr("stroke", "none")
             .attr("fill", d3.rgb("rgb(" + d.color + ")"))
+            .attr('opacity', '0.8')
     }
 
     function draw_x_and_y_scale() {
         // draw the x axis 
         var xAxis = (g, x) => g
-            .attr('transform', `translate(0, ${height*0.8-margin.bottom})`)
+            .attr('transform', `translate(0, ${height * 0.85 - margin.bottom})`)
             .style("font", "11px helvetica")
             .call(d3.axisBottom(x)
                 .ticks(10)
@@ -421,7 +449,7 @@ function miropeats_d3(data) {
 
         container.append("g")
             .call(xAxis, xz);
-        
+
 
         var xAxis2 = (g, x) => g
             .attr('transform', `translate(0, ${margin.top - 15})`)
@@ -449,7 +477,7 @@ function miropeats_d3(data) {
             .call(d3.axisRight(yscale_c)
                 .ticks(7)
             );
-        
+
     };
     draw_x_and_y_scale();
 
@@ -458,30 +486,30 @@ function miropeats_d3(data) {
     function draw_data(xz) {
         var st = Math.max(0, Math.round(xz.domain()[0]));
         var en = Math.min(aln_data[0].c1_len, Math.round(xz.domain()[1]));
-        var coords = `${t_name}:${d3.format(",")(st+1)}-${d3.format(",")(en)}`;
+        var coords = `${t_name}:${d3.format(",")(st + 1)}-${d3.format(",")(en)}`;
         d3.selectAll('.coordinates').remove();
         // define the coordinate box
         var coordinates = d3.select("body").append("div")
             .attr("class", "coordinates")
         coordinates.text(coords)
             .html(`<b> ${coords} </b>`)
-            .on("click", function(){
+            .on("click", function () {
                 coordinates.select();
-                navigator.clipboard.writeText(`${t_name}:${st+1}-${en}`).then(function() {
+                navigator.clipboard.writeText(`${t_name}:${st + 1}-${en}`).then(function () {
                     console.log('Async: Copying to clipboard was successful!');
-                  }, function(err) {
+                }, function (err) {
                     console.error('Async: Could not copy text: ', err);
-                  });
-            }) 
+                });
+            })
             .on('mousemove', function (event) {
                 // add the tooltip
                 div.transition()
                     .duration(100)
                     .style("opacity", .8);
                 div.html(
-                    "<b>Click to copy coordinates</b>" 
-                    )
-                    .style("left", event.pageX -100 + "px")
+                    "<b>Click to copy coordinates</b>"
+                )
+                    .style("left", event.pageX - 100 + "px")
                     .style("top", event.pageY + "px")
                     .style("border-width", "0px");
             })
@@ -494,18 +522,21 @@ function miropeats_d3(data) {
                     .duration(0)
                     .style("opacity", 0);
             })
-        
+
         // draw bed9
-        zoom_bed_9 = bed9_data.filter(function (d) {
-            return d.ct == t_name && d.en >= st && d.st <= en;
-        });
-        if (zoom_bed_9.length < MAX_BED_ITEMS) {
-            container.selectAll('g.item2')
-                .data(zoom_bed_9)
-                .enter()
-                .each(draw_bed)
-                .selectAll('path')
-        } 
+        for(var key in bed9_data) {
+            var tmp_bed9_data = bed9_data[key];
+            zoom_bed_9 = tmp_bed9_data.filter(function (d) {
+                return d.ct == t_name && d.en >= st && d.st <= en;
+            });
+            if (zoom_bed_9.length < MAX_BED_ITEMS) {
+                container.selectAll('g.item2')
+                    .data(zoom_bed_9)
+                    .enter()
+                    .each(draw_bed)
+                    .selectAll('path')
+            }
+        }
 
 
         // filter for region of interest! 
@@ -527,7 +558,7 @@ function miropeats_d3(data) {
         var xc2 = xz_offset(zoom_data[0].c2_len);
         var yc1 = yscale_d(zoom_data[0].c1_nm);
         var yc2 = yscale_d(zoom_data[0].c2_nm);
-        
+
         const path = d3.path();
         path.moveTo(xz(0), yc1 - label_margin); // c1 start
         path.lineTo(xc1, yc1 - label_margin); // go to c1 en
@@ -556,21 +587,7 @@ function miropeats_d3(data) {
         draw_x_and_y_scale();
         draw_data(xz)
     }
-
-
-    
-    // Add the coordinates to the url
-    // window.history.pushState("object or string", "Title", `/pos=${t_name}:${st+1}-${en}`);
-    var st = Math.round(xz.domain()[0]);
-    var en = Math.round(xz.domain()[1]);
-    /*if ('URLSearchParams' in window) {
-        var searchParams = new URLSearchParams(window.location.search)
-        searchParams.set("pos", `${t_name}:${st+1}-${en}`);
-        var newRelativePathQuery = window.location.pathname + '#' + searchParams.toString();
-        history.pushState(null, '', newRelativePathQuery);
-    }*/
 }
-miropeats_d3(l_aln_data);
 
 
 
@@ -593,7 +610,7 @@ function change_contigs() {
     t_name = sel.options[sel.selectedIndex].value;
     var sel = document.getElementById('queryButton');
     q_name = sel.options[sel.selectedIndex].value
-    
+
     console.log("selected option query:" + q_name);
     console.log("selected option target:" + t_name);
 
@@ -605,34 +622,31 @@ function change_contigs() {
     miropeats_d3(aln_data)
 }
 
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 // check for url updates
-function parse_url_change(){
+function parse_url_change() {
     const parsedHash = new URLSearchParams(
         window.location.hash.substr(1) // skip the first char (#)
     );
     var url = parsedHash.get("url");
     console.log(`url: ${url}`);
-    if( url != null) {
+    if (url != null) {
         d3.tsv(url)
             .then(function (d) {   // Handle the resolved Promise
                 return create_table(d);
             }
-        );
+            );
     }
     var max_bed_items = parsedHash.get("max_bed_items");
-    if ( max_bed_items != null && max_bed_items != MAX_BED_ITEMS) {
+    if (max_bed_items != null && max_bed_items != MAX_BED_ITEMS) {
         MAX_BED_ITEMS = max_bed_items;
         draw_bed();
     }
-    if(parsedHash.get("pos") != null) {
-        var x0=1e6; var x1=x0+2e7;
+    if (parsedHash.get("pos") != null) {
+        var x0 = 1e6; var x1 = x0 + 2e7;
         [chrm, pos] = parsedHash.get("pos").split(":");
         console.log(`chr: ${chrm}    pos: ${pos} maxlen: ${max_len}`);
-        if (chrm != t_name){
+        if (chrm != t_name) {
             let element = document.getElementById('targetButton');
             element.value = chrm;
             // filter the second button
@@ -641,27 +655,27 @@ function parse_url_change(){
             change_contigs();
         }
         [st, x1] = pos.split("-");
-        var x0 = st - 1; 
+        var x0 = st - 1;
         console.log(`x0: ${x0}    x1: ${x1} maxlen: ${max_len}`);
         container.call(zoom).transition()
-            .duration(1000)
+            .duration(2000)
             .call(
                 zoom.transform,
                 d3.zoomIdentity
-                .translate( (width)/2, height / 2)
-                .scale( (max_len) / (x1-x0) )
-                .translate(-(xscale(x0) + xscale(x1)) / 2, height)
+                    .translate((width) / 2, height / 2)
+                    .scale((max_len) / (x1 - x0))
+                    .translate(-(xscale(x0) + xscale(x1)) / 2, height)
             )
-            .on("end", function() {
-                if( parsedHash.get("save") != null ) {
+            .on("end", function () {
+                if (parsedHash.get("save") != null) {
                     save_svg();
                 }
             });
     }
-    else if( parsedHash.get("save") != null) {
+    else if (parsedHash.get("save") != null) {
         save_svg();
     }
-    if( parsedHash.get("view") != null) {
+    if (parsedHash.get("view") != null) {
         view_svg();
     }
 }
@@ -793,7 +807,7 @@ d3.select('button').on('click', function () {
     miropeats_d3(l_aln_data);
 });
 
-function view_svg(){
+function view_svg() {
     var st = Math.round(xz.domain()[0]);
     var en = Math.round(xz.domain()[1]);
     var svgEl = d3.selectAll("svg").node();//#"+chart_name);
@@ -801,26 +815,26 @@ function view_svg(){
     svgEl.setAttribute("xmlns", "http://www.w3.org/2000/svg");
     var svgData = svgEl.outerHTML;
     var preface = '<?xml version="1.0" standalone="no"?>\r\n';
-    var svgBlob = new Blob([preface, svgData], {type:"image/svg+xml;charset=utf-8"});
+    var svgBlob = new Blob([preface, svgData], { type: "image/svg+xml;charset=utf-8" });
     var svgUrl = URL.createObjectURL(svgBlob);
-    window.location = (svgUrl) 
+    window.location = (svgUrl)
 }
 
-function save_svg(){
+function save_svg() {
     var st = Math.round(xz.domain()[0]);
     var en = Math.round(xz.domain()[1]);
-    
+
     var svgEl = d3.selectAll("svg").node();//#"+chart_name);
     console.log(svgEl);
     svgEl.setAttribute("xmlns", "http://www.w3.org/2000/svg");
     var svgData = svgEl.outerHTML;
     var preface = '<?xml version="1.0" standalone="no"?>\r\n';
-    var svgBlob = new Blob([preface, svgData], {type:"image/svg+xml;charset=utf-8"});
+    var svgBlob = new Blob([preface, svgData], { type: "image/svg+xml;charset=utf-8" });
     var svgUrl = URL.createObjectURL(svgBlob);
 
     var downloadLink = document.createElement("a");
     downloadLink.href = svgUrl;
-    downloadLink.download = `SafFire_${t_name}:${st+1}-${en}.svg`;
+    downloadLink.download = `SafFire_${t_name}:${st + 1}-${en}.svg`;
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);
@@ -828,24 +842,26 @@ function save_svg(){
 
 
 
-function order_q_names(aln_data){
+function order_q_names(aln_data) {
     var dict = {};
     for (var i = 0; i < aln_data.length; i++) {
         var key = aln_data[i].c2_nm;
-        var value =  aln_data[i].c2_en - aln_data[i].c2_st;
-        if( !(key in dict)){
+        var value = aln_data[i].c2_en - aln_data[i].c2_st;
+        if (!(key in dict)) {
             dict[key] = 0;
         }
         dict[key] = dict[key] + value;
     }
     // Create items array
-    var items = Object.keys(dict).map(function(key) {
+    var items = Object.keys(dict).map(function (key) {
         return [key, dict[key]];
-     });
+    });
     // Sort the array based on the second element
-    items.sort(function(first, second) {
-     return second[1] - first[1];
-    }); 
+    items.sort(function (first, second) {
+        return second[1] - first[1];
+    });
 
-    return items.map(function(d){return d[0]});
+    return items.map(function (d) { return d[0] });
 }
+
+miropeats_d3(l_aln_data);

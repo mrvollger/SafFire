@@ -33,7 +33,7 @@ var bed9_data = {
 var zoom_bed_9 = bed9_data;
 var bed_yscale_mod = d3.scaleBand()//d3.scaleBand()
     .domain(Object.keys(bed9_data))
-    .range([0, 25.0]);
+    .range([0, 20.0]);
 
 // thing I want to be global
 var t_name = "";
@@ -88,8 +88,8 @@ function create_table(data) {
 // load in the t2t alignments as defualt 
 //d3.tsv("datasets/GRCh38_to_T2T.CHM13.v1.1_100k.tbl")
 // d3.tsv("datasets/GRCh38_to_T2T.CHM13.v1.1.tbl")
-var tbl_file = "datasets/GRCh38_to_T2T.CHM13.v1.0_mm2_v2.22.tbl"
 var tbl_file = "datasets/CHM1.tbl"
+var tbl_file = "datasets/GRCh38_to_T2T.CHM13.v1.0_mm2_v2.22.tbl"
 d3.tsv(tbl_file)
     .then(function (d) {   // Handle the resolved Promise
         return create_table(d);
@@ -117,7 +117,7 @@ function create_bed9(data, bed_file) {
     console.log(Object.keys(bed9_data));
     bed_yscale_mod = d3.scaleBand()//d3.scaleBand()
         .domain(Object.keys(bed9_data))
-        .range([0, 25.0]);
+        .range([0, 20.0]);
 };
 //d3.tsv("datasets/Mel_dup_dupmasker_colors.bed")
 var bed_file = "datasets/chm13_v1.1_plus38Y_dupmasker_colors.bed"
@@ -125,8 +125,7 @@ var bed_file = "./datasets/DupMasker_plus_CHM1_PAV.bed";
 var bed_file = "datasets/CHM1_PAV.bed"
 var bed_files = [
     "datasets/CenSat.bed",
-    "datasets/chm13_v1.1_plus38Y_dupmasker_colors.bed",
-    "datasets/CHM1_PAV.bed"
+    "datasets/chm13_v1.1_plus38Y_dupmasker_colors.bed"
 ]
 for (const bed_file of bed_files) {
     console.log("loading bed file: " + bed_file);

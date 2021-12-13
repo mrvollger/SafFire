@@ -1,3 +1,6 @@
+set_default_hash();
+get_url_elm("ref");
+
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -16,6 +19,8 @@ var max_len = "";
 var zoom = "";
 var MAX_BED_ITEMS = 1000;
 var BED_COUNT = 1;
+var REF = get_url_elm("ref");
+var QUERY = get_url_elm("query");
 var draw_bed = function (d) { }
 
 var l_aln_data = [
@@ -72,7 +77,7 @@ function create_table(data) {
             c1_en: +d.reference_end,
             c1_len: +d.reference_length,
             strand: d.strand,
-            c2_nm: "Query: " + d["query_name"],
+            c2_nm: "Query:" + d["query_name"],
             c2_st: +d.query_start,
             c2_en: +d.query_end,
             c2_len: +d.query_length,
@@ -88,8 +93,9 @@ function create_table(data) {
 // load in the t2t alignments as defualt 
 //d3.tsv("datasets/GRCh38_to_T2T.CHM13.v1.1_100k.tbl")
 // d3.tsv("datasets/GRCh38_to_T2T.CHM13.v1.1.tbl")
-var tbl_file = "datasets/CHM1.tbl"
 var tbl_file = "datasets/GRCh38_to_T2T.CHM13.v1.0_mm2_v2.22.tbl"
+var tbl_file = "datasets/CHM1.tbl"
+var tbl_file = `datasets/${QUERY}_to_${REF}.tbl`
 d3.tsv(tbl_file)
     .then(function (d) {   // Handle the resolved Promise
         return create_table(d);
@@ -424,7 +430,7 @@ function miropeats_d3(data) {
         }
         // connect c1 start and end
         var y = height - margin.bottom * 2;
-        var y = yscale_d(d.ct) + bed_yscale_mod(d.file) //+ 3*label_margin//+yscale_d.bandwidth(),
+        var y = yscale_d(d.ct) + bed_yscale_mod(d.file)
         var tri_width = bed_yscale_mod.bandwidth() / 2.0;
         path.moveTo(start, y - tri_width);
         path.lineTo(start, y + tri_width);
@@ -639,6 +645,19 @@ function parse_url_change() {
             }
             );
     }
+    // check if ref or query updated
+    var ref = parsedHash.get("ref");
+    var query = parsedHash.get("query");
+    if (ref != REF || query != QUERY) {
+        REF = ref;
+        QUERY = query;
+        var tbl_file = `datasets/${QUERY}_to_${REF}.tbl`
+        d3.tsv(tbl_file)
+            .then(function (d) {   // Handle the resolved Promise
+                return create_table(d);
+            });
+    }
+
     var max_bed_items = parsedHash.get("max_bed_items");
     if (max_bed_items != null && max_bed_items != MAX_BED_ITEMS) {
         MAX_BED_ITEMS = max_bed_items;

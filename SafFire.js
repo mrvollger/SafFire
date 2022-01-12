@@ -233,7 +233,7 @@ function miropeats_d3(data) {
         .attr("viewBox", `0 0 ${width} ${height}`) // top, left, width, down
 
     max_len = d3.max(aln_data, function (d) {
-        return d3.max([d.c1_len, d.c2_len])
+        return d3.max([d.c1_len, d.c2_en + 1e6])
     });
     // target xscale inital x scale
     xscale = d3.scaleLinear()
@@ -550,21 +550,39 @@ function miropeats_d3(data) {
         // add contig bars
         var xc1 = xz(zoom_data[0].c1_len);
         var yc1 = yscale_d(zoom_data[0].c1_nm);
-
         const path = d3.path();
         path.moveTo(xz(0), yc1 - label_margin); // c1 start
         path.lineTo(xc1, yc1 - label_margin); // go to c1 en
 
+        //
+        var start_end_dict = {};
+        zoom_data.map(function (d) {
+            if (!start_end_dict.hasOwnProperty(d.c2_nm)) {
+                start_end_dict[d.c2_nm] = { start: d.c2_st, end: d.c2_en, len: d.c2_len };
+            };
+            if (d.c2_st < start_end_dict[d.c2_nm].start) {
+                start_end_dict[d.c2_nm].start = d.c2_st;
+            };
+            if (d.c2_en > start_end_dict[d.c2_nm].end) {
+                start_end_dict[d.c2_nm].end = d.c2_en;
+            };
+        });
+
+        const dashed_path = d3.path();
         // add all query bars
-        var temp_c2_nms = zoom_data.map(d => d.c2_nm);
-        var c2_nms = [...new Set(temp_c2_nms)];
-        for (const c2_nm of c2_nms) {
-            var c2_len = zoom_data.filter(d => d.c2_nm == c2_nm)[0].c2_len;
+        for (c2_nm in start_end_dict) {
+            // add transparent bars
+            var c2_len = start_end_dict[c2_nm].len;
             var xc2 = xz_offset(c2_len, c2_nm);
             var yc2 = yscale_d(c2_nm);
-            path.moveTo(xz_offset(0, c2_nm), yc2 + label_margin);
-            path.lineTo(xc2, yc2 + label_margin);
+            dashed_path.moveTo(xz_offset(0, c2_nm), yc2 + label_margin);
+            dashed_path.lineTo(xc2, yc2 + label_margin);
 
+            // add solid bars
+            var xc2 = xz_offset(start_end_dict[c2_nm].end, c2_nm);
+            var yc2 = yscale_d(c2_nm);
+            path.moveTo(xz_offset(start_end_dict[c2_nm].start, c2_nm), yc2 + label_margin);
+            path.lineTo(xc2, yc2 + label_margin);
         }
         path.closePath();
 
@@ -573,6 +591,14 @@ function miropeats_d3(data) {
             .attr("stroke", "black")
             .attr("stroke-width", 3)
             .attr('opacity', 1);
+
+        container.append("path")
+            .attr("d", dashed_path)
+            .attr("stroke", "black")
+            .attr("stroke-width", 1)
+            .attr('opacity', 0.45)
+            .style("stroke-dasharray", ("1, 0.75"));
+
 
     };
     draw_data(xz);

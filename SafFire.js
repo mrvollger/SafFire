@@ -91,10 +91,6 @@ function create_table(data) {
     parse_url_change();
 };
 // load in the t2t alignments as defualt 
-//d3.tsv("datasets/GRCh38_to_T2T.CHM13.v1.1_100k.tbl")
-// d3.tsv("datasets/GRCh38_to_T2T.CHM13.v1.1.tbl")
-var tbl_file = "datasets/GRCh38_to_T2T.CHM13.v1.0_mm2_v2.22.tbl"
-var tbl_file = "datasets/CHM1.tbl"
 var tbl_file = `datasets/${QUERY}_to_${REF}.tbl`
 d3.tsv(tbl_file)
     .then(function (d) {   // Handle the resolved Promise
@@ -102,11 +98,15 @@ d3.tsv(tbl_file)
     });
 
 // read in bed_9 data
-function create_bed9(data, bed_file) {
-    console.log("creating bed data from " + bed_file);
+function create_bed9(data, bed_file, is_query) {
+    console.log(`creating bed data from (${is_query})` + bed_file);
     tmp_bed9_data = data.map(function (d) {
+        var temp_name = d.ct;
+        if (is_query) {
+            temp_name = "Query:" + d.ct;
+        };
         return {
-            ct: d.ct,
+            ct: temp_name,
             st: +d.st,
             en: +d.en,
             name: d.name,
@@ -125,22 +125,31 @@ function create_bed9(data, bed_file) {
         .domain(Object.keys(bed9_data))
         .range([0, 20.0]);
 };
-//d3.tsv("datasets/Mel_dup_dupmasker_colors.bed")
-var bed_file = "datasets/chm13_v1.1_plus38Y_dupmasker_colors.bed"
-var bed_file = "./datasets/DupMasker_plus_CHM1_PAV.bed";
-var bed_file = "datasets/CHM1_PAV.bed"
-var bed_files = [
-    "datasets/CenSat.bed",
-    "datasets/chm13_v1.1_plus38Y_dupmasker_colors.bed"
-]
-for (const bed_file of bed_files) {
-    console.log("loading bed file: " + bed_file);
-    d3.tsv(bed_file)
-        .then(function (d) {   // Handle the resolved Promise
-            return create_bed9(d, bed_file);
-        });
-    console.log(bed9_data);
+
+// this function check for bed files that exist for these references and loads them in
+function read_in_bed9_defaults() {
+    var bed_files = {
+        ref: [
+            `datasets/${REF}_CenSat.bed`,
+            `datasets/${REF}_dupmasker_colors.bed`
+        ],
+        query: [
+            `datasets/${QUERY}_dupmasker_colors.bed`,
+            `datasets/${QUERY}_gaps.bed`,
+        ]
+    }
+    for (const key in bed_files) {
+        for (const bed_file of bed_files[key]) {
+            console.log(`loading bed file for ${key} ${key == "query"} ${key}: ` + bed_file);
+            d3.tsv(bed_file)
+                .then(function (d) {   // Handle the resolved Promise
+                    return create_bed9(d, bed_file, key == "query");
+                });
+            console.log(bed9_data);
+        }
+    }
 }
+read_in_bed9_defaults();
 
 // handle upload button
 function upload_button(el) {
@@ -243,7 +252,11 @@ function miropeats_d3(data) {
 
     // query xscale inital x scale
     function xz_offset(d, c2_nm) {
-        return xz(d + c2_offset[c2_nm]);
+        var offset = 0;
+        if (c2_offset.hasOwnProperty(c2_nm)) {
+            offset = c2_offset[c2_nm]
+        }
+        return xz(d + offset);
     };
 
     other_y_poses = [];//Array(q_names.length).fill(margin.top).map(function (d, i) {d + i});
@@ -419,15 +432,18 @@ function miropeats_d3(data) {
             .attr("color", "black")
             .attr("stroke-width", 2);
 
-        var start = xz(d.st);
-        var end = xz(d.en);
+        var start = xz_offset(d.st, d.ct);
+        var end = xz_offset(d.en, d.ct);
         if (d.strand == "-") {
-            start = xz(d.en);
-            end = xz(d.st);
+            start = xz_offset(d.en, d.ct);
+            end = xz_offset(d.st, d.ct);
         }
-        // connect c1 start and end
-        var y = height - margin.bottom * 2;
-        var y = yscale_d(d.ct) + bed_yscale_mod(d.file)
+
+        if (d.ct == t_name) {
+            var y = yscale_d(d.ct) + bed_yscale_mod(d.file);
+        } else {
+            var y = yscale_d(d.ct)  //- bed_yscale_mod(d.file) + 10;
+        }
         var tri_width = bed_yscale_mod.bandwidth() / 2.0;
         path.moveTo(start, y - tri_width);
         path.lineTo(start, y + tri_width);
@@ -516,22 +532,6 @@ function miropeats_d3(data) {
                     .duration(0)
                     .style("opacity", 0);
             })
-
-        // draw bed9
-        for (var key in bed9_data) {
-            var tmp_bed9_data = bed9_data[key];
-            zoom_bed_9 = tmp_bed9_data.filter(function (d) {
-                return d.ct == t_name && d.en >= st && d.st <= en;
-            });
-            if (zoom_bed_9.length < MAX_BED_ITEMS) {
-                container.selectAll('g.item2')
-                    .data(zoom_bed_9)
-                    .enter()
-                    .each(draw_bed)
-                    .selectAll('path')
-            }
-        }
-
 
         // filter for region of interest! 
         var zoom_data = aln_data.filter(function (d) {
@@ -625,6 +625,22 @@ function miropeats_d3(data) {
                     .style("opacity", 0);
             });
 
+
+        // draw bed9
+        for (var key in bed9_data) {
+            var tmp_bed9_data = bed9_data[key];
+            zoom_bed_9 = tmp_bed9_data.filter(function (d) {
+                return d.ct == t_name && d.en >= st && d.st <= en
+                    || start_end_dict.hasOwnProperty(d.ct) && d.en + c2_offset[d.ct] >= st && d.st + c2_offset[d.ct] <= en;
+            });
+            if (zoom_bed_9.length < MAX_BED_ITEMS) {
+                container.selectAll('g.item2')
+                    .data(zoom_bed_9)
+                    .enter()
+                    .each(draw_bed)
+                    .selectAll('path')
+            }
+        }
 
     };
     draw_data(xz);

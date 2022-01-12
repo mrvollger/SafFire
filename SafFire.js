@@ -4,6 +4,9 @@ get_url_elm("ref");
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
+// natural sorting function
+var collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+
 
 var chart_name = "chart";
 // WARNING: LEFT AND RIGHT MARGIN MUST BE EQUAL AMOUNTS
@@ -43,7 +46,10 @@ var bed_yscale_mod = d3.scaleBand()//d3.scaleBand()
 // thing I want to be global
 var t_name = "";
 var q_name = "";
-var c2_offset = 0; // how much to offset the second contig to allow for centering 
+//var c2_offset = { "": 0, NULL: 0 }; // how much to offset the second contig to allow for centering 
+var c2_offset = new Proxy({}, {
+    get: (target, name) => name in target ? target[name] : 0
+})
 var yscale_d = "";
 var yscale_c = "";
 var xscale = "";
@@ -53,12 +59,6 @@ var alpha_scale = "";
 const label_margin = 10;
 const forward_color = "#2081f9";
 const reverse_color = "#f99820";
-
-// label format
-function label_fmt(d) {
-    fmt = d3.format(",.0f")(d - c2_offset);
-    return (fmt);
-}
 
 function create_table(data) {
     l_aln_data = data.map(function (d) {
@@ -96,6 +96,7 @@ function create_table(data) {
 var tbl_file = "datasets/GRCh38_to_T2T.CHM13.v1.0_mm2_v2.22.tbl"
 var tbl_file = "datasets/CHM1.tbl"
 var tbl_file = `datasets/${QUERY}_to_${REF}.tbl`
+var tbl_file = "datasets/tmp.tbl"
 d3.tsv(tbl_file)
     .then(function (d) {   // Handle the resolved Promise
         return create_table(d);
@@ -205,7 +206,7 @@ new_target_selector(l_aln_data);
 
 function miropeats_d3(data) {
     var aln_data = data;
-    var t_names = [...new Set(data.map(d => d.c1_nm))];
+    var t_names = [...new Set(data.map(d => d.c1_nm))].sort(collator.compare);
     var q_names = [...new Set(data.map(d => d.c2_nm))];
 
     t_name = t_names[0];
@@ -242,18 +243,14 @@ function miropeats_d3(data) {
     xz = xscale; // define a zoomed version
 
     // query xscale inital x scale
-    function xz_offset(d) {
-        return xz(d + c2_offset);
-    };
-    function offset(d) {
-        fmt = label_fmt(d - c2_offset);
-        return (fmt);
+    function xz_offset(d, c2_nm) {
+        return xz(d + c2_offset[c2_nm]);
     };
 
     other_y_poses = [];//Array(q_names.length).fill(margin.top).map(function (d, i) {d + i});
     other_y_poses.push(0.8 * height - margin.bottom);
     for (var i = 0; i < q_names.length; i++) {
-        other_y_poses.push(1.5 * margin.top - i * height / 30);
+        other_y_poses.push(1.5 * margin.top - i * height / 100);
     }
 
     console.log("other_y_poses: " + other_y_poses);
@@ -304,7 +301,8 @@ function miropeats_d3(data) {
 
         //
         var c1_st = xz(o_c1_st), c1_en = xz(o_c1_en),
-            c2_st = xz_offset(o_c2_st), c2_en = xz_offset(o_c2_en);
+            c2_st = xz_offset(o_c2_st, c2_nm), c2_en = xz_offset(o_c2_en, c2_nm);
+        //console.log("pre error?" + c2_nm + " " + c2_st + " " + c2_en);
         var y_perid = yscale_c(perid);
 
 
@@ -459,17 +457,6 @@ function miropeats_d3(data) {
             .call(xAxis, xz);
 
 
-        var xAxis2 = (g, x) => g
-            .attr('transform', `translate(0, ${margin.top - 15})`)
-            .style("font", "11px helvetica")
-            .call(d3.axisTop(x)
-                .tickFormat(offset)
-                .ticks(10)
-            );
-        // TODO
-        //container.append("g")
-        //   .call(xAxis2, xz)
-
         // draw the y axis
         container.append('g')
             .style("font", "10px helvetica")
@@ -563,15 +550,23 @@ function miropeats_d3(data) {
 
         // add contig bars
         var xc1 = xz(zoom_data[0].c1_len);
-        var xc2 = xz_offset(zoom_data[0].c2_len);
         var yc1 = yscale_d(zoom_data[0].c1_nm);
-        var yc2 = yscale_d(zoom_data[0].c2_nm);
 
         const path = d3.path();
         path.moveTo(xz(0), yc1 - label_margin); // c1 start
         path.lineTo(xc1, yc1 - label_margin); // go to c1 en
-        path.moveTo(xz_offset(0), yc2 + label_margin);
-        path.lineTo(xc2, yc2 + label_margin);
+
+        // add all query bars
+        var temp_c2_nms = zoom_data.map(d => d.c2_nm);
+        var c2_nms = [...new Set(temp_c2_nms)];
+        for (const c2_nm of c2_nms) {
+            var c2_len = zoom_data.filter(d => d.c2_nm == c2_nm)[0].c2_len;
+            var xc2 = xz_offset(c2_len, c2_nm);
+            var yc2 = yscale_d(c2_nm);
+            path.moveTo(xz_offset(0, c2_nm), yc2 + label_margin);
+            path.lineTo(xc2, yc2 + label_margin);
+
+        }
         path.closePath();
 
         container.append("path")
@@ -754,7 +749,10 @@ function new_target_selector(new_data) {
     d3.selectAll("option").remove()
 
     // add the options to the button
-    var t_names = [...new Set(new_data.map(d => d.c1_nm))];
+    var t_names = [...new Set(new_data.map(d => d.c1_nm))].sort(collator.compare);
+    //var myArray = ['1_Document', '11_Document', '2_Document'];
+    //console.log(t_names);
+
     console.log("new target names:" + t_names);
     targetButton
         .selectAll('myOptions')
@@ -771,17 +769,28 @@ function new_target_selector(new_data) {
 
 
 function difference_in_mid_point(data) {
-    var mid_target = 0;
-    var mid_query = 0;
-    var total = 0;
+    rtn = {};
+    var temp_c2_nms = data.map(d => d.c2_nm);
+    var c2_nms = [...new Set(temp_c2_nms)];
+    //console.log("names in use?" + c2_nms + temp_c2_nms);
+    //const myList = [1,4,5,1,2,4,5,6,7];
+    //const unique = [...new Set(myList)];
+    for (const c2_nm of c2_nms) {
+        var mid_target = 0;
+        var mid_query = 0;
+        var total = 0;
 
-    data.map(function (d) {
-        var weight = (d.c2_en - d.c2_st);
-        mid_target += weight * (d.c1_en + d.c1_st) / 2;
-        mid_query += weight * (d.c2_en + d.c2_st) / 2;
-        total += weight;
-    });
-    return ((mid_target - mid_query) / total)
+        data.map(function (d) {
+            if (d.c2_nm == c2_nm) {
+                var weight = (d.c2_en - d.c2_st);
+                mid_target += weight * (d.c1_en + d.c1_st) / 2;
+                mid_query += weight * (d.c2_en + d.c2_st) / 2;
+                total += weight;
+            }
+        });
+        rtn[c2_nm] = ((mid_target - mid_query) / total)
+    }
+    return rtn
 }
 
 function add_text(container) {

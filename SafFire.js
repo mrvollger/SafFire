@@ -585,6 +585,7 @@ function miropeats_d3(data) {
             path.lineTo(xc2, yc2 + label_margin);
         }
         path.closePath();
+        dashed_path.closePath();
 
         container.append("path")
             .attr("d", path)
@@ -597,7 +598,32 @@ function miropeats_d3(data) {
             .attr("stroke", "black")
             .attr("stroke-width", 2)
             .attr('opacity', 0.45)
-            .style("stroke-dasharray", ("1, 1"));
+            .style("stroke-dasharray", ("1, 1"))
+            .on('mouseover', function (event) {
+                d3.select(this).transition()
+                    .duration(100)
+                    .attr('opacity', '1');
+            })
+            .on('mousemove', function (event) {
+                // add the tooltip
+                div.transition()
+                    .duration(100)
+                    .style("opacity", 0.6);
+                div.html(
+                    ""// TODO add in the query contig name
+                )
+                    .style("left", event.pageX - 40 + "px")
+                    .style("top", event.pageY - 60 + "px");
+            })
+            .on('mouseout', function () {
+                d3.select(this).transition()
+                    .duration(1)
+                    .attr('opacity', 0.6);
+                // remove tooltip
+                div.transition()
+                    .duration(0)
+                    .style("opacity", 0);
+            });
 
 
     };

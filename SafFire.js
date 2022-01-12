@@ -96,7 +96,6 @@ function create_table(data) {
 var tbl_file = "datasets/GRCh38_to_T2T.CHM13.v1.0_mm2_v2.22.tbl"
 var tbl_file = "datasets/CHM1.tbl"
 var tbl_file = `datasets/${QUERY}_to_${REF}.tbl`
-var tbl_file = "datasets/tmp.tbl"
 d3.tsv(tbl_file)
     .then(function (d) {   // Handle the resolved Promise
         return create_table(d);
@@ -587,6 +586,7 @@ function miropeats_d3(data) {
     function zoomed(event) {
         xz = event.transform.rescaleX(xscale);
         d3.selectAll("svg > *").remove();
+        d3.selectAll('.coordinates').remove();
         draw_x_and_y_scale();
         draw_data(xz)
     }
@@ -618,6 +618,7 @@ function change_contigs() {
     console.log("selected option target:" + t_name);
 
     d3.selectAll("svg").remove();
+    d3.selectAll('.coordinates').remove();
     // filter for contig of interest! 
     var aln_data = l_aln_data.filter(function (e) {
         return e.c1_nm == t_name //&& e.c2_nm == q_name;
@@ -730,6 +731,7 @@ function filter_query_button_by_target(target_name) {
     // uniq_q.reverse();
     // var uniq_q = [...new Set(filtered.map(d => d.c2_nm))];
     uniq_q.push("All");
+    d3.selectAll('.coordinates').remove();
     // remove options previously in the q selector
     d3.selectAll("#queryButton").selectAll("option").remove()
     // enter in the new data 
@@ -747,6 +749,7 @@ function filter_query_button_by_target(target_name) {
 function new_target_selector(new_data) {
     // remove previous selections 
     d3.selectAll("option").remove()
+    d3.selectAll('.coordinates').remove();
 
     // add the options to the button
     var t_names = [...new Set(new_data.map(d => d.c1_nm))].sort(collator.compare);
@@ -833,7 +836,8 @@ d3.select('button').on('click', function () {
             id: +d.id,
         };
     });
-    d3.selectAll("svg").remove()
+    d3.selectAll("svg").remove();
+    d3.selectAll('.coordinates').remove();
     miropeats_d3(l_aln_data);
 });
 

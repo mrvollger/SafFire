@@ -595,9 +595,9 @@ function miropeats_d3(data) {
         container.append("path")
             .attr("d", dashed_path)
             .attr("stroke", "black")
-            .attr("stroke-width", 1)
+            .attr("stroke-width", 2)
             .attr('opacity', 0.45)
-            .style("stroke-dasharray", ("1, 0.75"));
+            .style("stroke-dasharray", ("1, 1"));
 
 
     };

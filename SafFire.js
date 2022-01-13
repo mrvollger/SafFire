@@ -262,9 +262,11 @@ function miropeats_d3(data) {
 
     other_y_poses = [];//Array(q_names.length).fill(margin.top).map(function (d, i) {d + i});
     other_y_poses.push(0.8 * height - margin.bottom);
+    var dist_between_q_lines = Math.min(15, 80 / q_names.length);
+    console.log("dist_between_q_lines: " + dist_between_q_lines);
     if (q_name == "All") {
         for (var i = q_names.length - 1; i >= 0; i--) {
-            other_y_poses.push(margin.top + i * 7);
+            other_y_poses.push(margin.top + i * dist_between_q_lines);
         }
     } else {
         other_y_poses.push(margin.top + 20);
@@ -503,16 +505,43 @@ function miropeats_d3(data) {
             .call(xAxis, xz);
 
 
+        // add white squares for the text 
+        var square_data = []
+        get_contig_names(aln_data).forEach(function (key) {
+            var tname = format_y_axis(key);
+            var x1 = 5;
+            var x2 = 10 + 5 * tname.length;
+            var y1 = yscale_d(key) - 5.5;
+            var y2 = yscale_d(key) + 5.5;
+            square_data.push([[x1, y1], [x2, y2]]);
+        });
+        var rects = container.selectAll("foo")
+            .data(square_data)
+            .enter()
+            .append("rect")
+            .attr("x", d => d[0][0])
+            .attr("y", d => d[0][1])
+            .attr("width", d => d[1][0] - d[0][0])
+            .attr("height", d => d[1][1] - d[0][1])
+            .attr("opacity", 0.6)
+            .attr("stroke", "black")
+            .attr("stroke-opacity", "0.5")
+            .attr('stroke-linecap', 'round')
+            .attr('stroke-width', '.5')
+            .attr("fill", "white");
+
         // draw the y axis
         container.append('g')
-            .style("font", "10px helvetica")
+            .style("font", "8px helvetica")
             //.attr('transform', `translate(0, 0)`)
             .attr("opacity", 1)
             .attr("fill", "black")
             .attr("stroke-width", 0)
-            .call(d3.axisRight(yscale_d))
-            .selectAll("text")
-            .attr("dy", "10px");
+            .call(d3.axisRight(yscale_d)
+                .tickFormat(format_y_axis)
+            )
+        //.selectAll("text")
+        //.attr("dy", "10px");
 
         container.append('g')
             .style("font", "8px helvetica")

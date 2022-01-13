@@ -103,6 +103,14 @@ function difference_in_mid_point(data) {
     return rtn
 }
 
+function get_contig_names(data) {
+    var temp_c1_nms = data.map(d => d.c1_nm);
+    const c1_nms = [...new Set(temp_c1_nms)];
+    var temp_c2_nms = data.map(d => d.c2_nm);
+    const c2_nms = [...new Set(temp_c2_nms)];
+    return c1_nms.concat(c2_nms);
+}
+
 // get the start, end, and length of the query contigs 
 function make_start_end_dict(zoom_data) {
     var start_end_dict = {};
@@ -118,4 +126,8 @@ function make_start_end_dict(zoom_data) {
         };
     });
     return start_end_dict;
+}
+
+var format_y_axis = function (d) {
+    return d.replace(/^(Query:)/, '');;
 }

@@ -316,6 +316,8 @@ function miropeats_d3(data) {
         o_c2_st, o_c2_en,
         perid, strand) {
 
+        var st = Math.max(0, Math.round(xz.domain()[0]));
+        var en = Math.min(aln_data[0].c1_len, Math.round(xz.domain()[1]));
         //
         var c1_st = xz(o_c1_st), c1_en = xz(o_c1_en),
             c2_st = xz_offset(o_c2_st, c2_nm), c2_en = xz_offset(o_c2_en, c2_nm);
@@ -342,7 +344,9 @@ function miropeats_d3(data) {
         };
         // color alpha on identity 
         var opacity = alpha_scale(perid);
-
+        if (o_c1_en < st && o_c1_st < st) {
+            opacity = 0;
+        }
         // connect c1 start and end
         path.moveTo(c1_st, c1_h);
         path.lineTo(c1_en, c1_h);
@@ -489,7 +493,7 @@ function miropeats_d3(data) {
     function draw_x_and_y_scale() {
         // draw the x axis 
         var xAxis = (g, x) => g
-            .attr('transform', `translate(0, ${height * 0.85 - margin.bottom})`)
+            .attr('transform', `translate(0, ${height * 0.855 - margin.bottom})`)
             .style("font", "11px helvetica")
             .call(d3.axisBottom(x)
                 .ticks(10)
@@ -505,8 +509,10 @@ function miropeats_d3(data) {
             //.attr('transform', `translate(0, 0)`)
             .attr("opacity", 1)
             .attr("fill", "black")
-            .attr("stroke-width", 2)
-            .call(d3.axisRight(yscale_d));
+            .attr("stroke-width", 0)
+            .call(d3.axisRight(yscale_d))
+            .selectAll("text")
+            .attr("dy", "10px");
 
         container.append('g')
             .style("font", "8px helvetica")
@@ -516,7 +522,6 @@ function miropeats_d3(data) {
             );
 
     };
-    draw_x_and_y_scale();
 
 
     // add in the data 
@@ -616,6 +621,8 @@ function miropeats_d3(data) {
             .attr('opacity', 0.45)
             .style("stroke-dasharray", ("1, 1"));
 
+        // draw the scales 
+        draw_x_and_y_scale();
 
         // draw bed9
         for (var key in bed9_data) {

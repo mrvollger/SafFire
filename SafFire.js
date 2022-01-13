@@ -1,13 +1,6 @@
 set_default_hash();
 get_url_elm("ref");
 
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-// natural sorting function
-var collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-
-
 var chart_name = "chart";
 // WARNING: LEFT AND RIGHT MARGIN MUST BE EQUAL AMOUNTS
 var margin = { top: 40, right: 40, bottom: 40, left: 40 };
@@ -16,7 +9,6 @@ console.assert(margin.left === margin.right,
 var scale = 1.5;
 var height = Math.round(275 * scale);
 var width = Math.round(800 * scale);
-var INVERT = false;
 var container = "";
 var max_len = "";
 var zoom = "";
@@ -128,6 +120,8 @@ function create_bed9(data, bed_file, is_query) {
 
 // this function check for bed files that exist for these references and loads them in
 function read_in_bed9_defaults() {
+    bed9_data = {};
+    zoom_bed_9 = {};
     var bed_files = {
         ref: [
             `datasets/${REF}_CenSat.bed`,
@@ -145,7 +139,6 @@ function read_in_bed9_defaults() {
                 .then(function (d) {   // Handle the resolved Promise
                     return create_bed9(d, bed_file, key == "query");
                 });
-            console.log(bed9_data);
         }
     }
 }
@@ -166,6 +159,10 @@ function upload_button(el) {
     }
 
     function parseFile() {
+        REF = "USER_REF";
+        QUERY = "USER_QUERY";
+        set_user_hash();
+        read_in_bed9_defaults();
         //var doesColumnExist = false;
         var data = d3.tsvParse(reader.result, function (d) {
             return d;
@@ -174,6 +171,7 @@ function upload_button(el) {
         create_table(data);
     }
 };
+
 // handle upload bed
 function uploadbed(el) {
     console.log("in upload_bed: " + el);
@@ -884,8 +882,8 @@ function add_text(container) {
 }
 
 
-d3.select('button').on('click', function () {
-    console.log("button!!!");
+d3.select('#invert').on('click', function () {
+    console.log("invert button!!!");
     l_aln_data = l_aln_data.map(function (d) {
         var s = "+";
         if (d.strand == "+") {
@@ -940,30 +938,6 @@ function save_svg() {
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);
-}
-
-
-
-function order_q_names(aln_data) {
-    var dict = {};
-    for (var i = 0; i < aln_data.length; i++) {
-        var key = aln_data[i].c2_nm;
-        var value = aln_data[i].c2_en - aln_data[i].c2_st;
-        if (!(key in dict)) {
-            dict[key] = 0;
-        }
-        dict[key] = dict[key] + value;
-    }
-    // Create items array
-    var items = Object.keys(dict).map(function (key) {
-        return [key, dict[key]];
-    });
-    // Sort the array based on the second element
-    items.sort(function (first, second) {
-        return second[1] - first[1];
-    });
-
-    return items.map(function (d) { return d[0] });
 }
 
 miropeats_d3(l_aln_data);

@@ -8,6 +8,8 @@ console.assert(margin.left === margin.right,
     { right: margin.right, left: margin.left, errorMsg: "MARGINS NOT EQUAL" });
 var scale = 1.5;
 var height = Math.round(275 * scale);
+const original_height = height;
+var added_height = 0;
 var width = Math.round(800 * scale);
 var container = "";
 var max_len = "";
@@ -48,7 +50,7 @@ var xscale = "";
 var xz = "";
 var xz_offset = xz;
 var alpha_scale = "";
-const label_margin = 10;
+const label_margin = 0;
 const forward_color = "#2081f9";
 const reverse_color = "#f99820";
 
@@ -230,14 +232,15 @@ function miropeats_d3(data) {
         }
     });
 
-    q_names = order_q_names(aln_data);
+    q_names = order_q_names_by_start_point(aln_data);
     console.log("q_names: " + q_names);
 
+    // height += 20 * q_names.length;
     // set up the view box
     container = d3.select("#" + chart_name)
         .append("svg")
         .attr("width", "100%")
-        .attr("viewBox", `0 0 ${width} ${height}`) // top, left, width, down
+        .attr("viewBox", `0 0 ${width} ${height + added_height}`) // top, left, width, down
 
     max_len = d3.max(aln_data, function (d) {
         return d3.max([d.c1_len, d.c2_en + 1e6])
@@ -259,8 +262,12 @@ function miropeats_d3(data) {
 
     other_y_poses = [];//Array(q_names.length).fill(margin.top).map(function (d, i) {d + i});
     other_y_poses.push(0.8 * height - margin.bottom);
-    for (var i = 0; i < q_names.length; i++) {
-        other_y_poses.push(1.5 * margin.top - i * height / 100);
+    if (q_name == "All") {
+        for (var i = q_names.length - 1; i >= 0; i--) {
+            other_y_poses.push(margin.top + i * 7);
+        }
+    } else {
+        other_y_poses.push(margin.top + 20);
     }
 
     console.log("other_y_poses: " + other_y_poses);
@@ -438,9 +445,9 @@ function miropeats_d3(data) {
         }
 
         if (d.ct == t_name) {
-            var y = yscale_d(d.ct) + bed_yscale_mod(d.file);
+            var y = yscale_d(d.ct) + bed_yscale_mod(d.file) + 5;
         } else {
-            var y = yscale_d(d.ct)  //- bed_yscale_mod(d.file) + 10;
+            var y = yscale_d(d.ct) - bed_yscale_mod(d.file);
         }
         var tri_width = bed_yscale_mod.bandwidth() / 2.0;
         path.moveTo(start, y - tri_width);
@@ -455,6 +462,28 @@ function miropeats_d3(data) {
             .attr("stroke", "none")
             .attr("fill", d3.rgb("rgb(" + d.color + ")"))
             .attr('opacity', '0.8')
+            .on('mousemove', function (event) {
+                // add the tooltip
+                div.transition()
+                    .duration(100)
+                    .style("opacity", .8);
+                div.html(
+                    //`<b>${d.st}-${d.en}<br>${d.name}</b>`
+                    `<b>${d.name}</b>`
+                )
+                    .style("left", event.pageX + "px")
+                    .style("top", event.pageY - 20 + "px")
+                    .style("border-width", "0px");
+            })
+            .on('mouseout', function () {
+                d3.select(this).transition()
+                    .duration(1)
+                    .attr('opacity', 1);
+                // remove tooltip
+                div.transition()
+                    .duration(0)
+                    .style("opacity", 0);
+            })
     }
 
     function draw_x_and_y_scale() {
@@ -473,10 +502,10 @@ function miropeats_d3(data) {
         // draw the y axis
         container.append('g')
             .style("font", "10px helvetica")
-            .attr('transform', `translate(0, 0)`)
+            //.attr('transform', `translate(0, 0)`)
             .attr("opacity", 1)
             .attr("fill", "black")
-            .attr("stroke-width", 0)
+            .attr("stroke-width", 2)
             .call(d3.axisRight(yscale_d));
 
         container.append('g')
@@ -553,18 +582,7 @@ function miropeats_d3(data) {
         path.lineTo(xc1, yc1 - label_margin); // go to c1 en
 
         //
-        var start_end_dict = {};
-        zoom_data.map(function (d) {
-            if (!start_end_dict.hasOwnProperty(d.c2_nm)) {
-                start_end_dict[d.c2_nm] = { start: d.c2_st, end: d.c2_en, len: d.c2_len };
-            };
-            if (d.c2_st < start_end_dict[d.c2_nm].start) {
-                start_end_dict[d.c2_nm].start = d.c2_st;
-            };
-            if (d.c2_en > start_end_dict[d.c2_nm].end) {
-                start_end_dict[d.c2_nm].end = d.c2_en;
-            };
-        });
+        var start_end_dict = make_start_end_dict(zoom_data);
 
         const dashed_path = d3.path();
         // add all query bars
@@ -588,40 +606,15 @@ function miropeats_d3(data) {
         container.append("path")
             .attr("d", path)
             .attr("stroke", "black")
-            .attr("stroke-width", 3)
+            .attr("stroke-width", 0.5)
             .attr('opacity', 1);
 
         container.append("path")
             .attr("d", dashed_path)
             .attr("stroke", "black")
-            .attr("stroke-width", 2)
+            .attr("stroke-width", 0.5)
             .attr('opacity', 0.45)
-            .style("stroke-dasharray", ("1, 1"))
-            .on('mouseover', function (event) {
-                d3.select(this).transition()
-                    .duration(100)
-                    .attr('opacity', '1');
-            })
-            .on('mousemove', function (event) {
-                // add the tooltip
-                div.transition()
-                    .duration(100)
-                    .style("opacity", 0.6);
-                div.html(
-                    ""// TODO add in the query contig name
-                )
-                    .style("left", event.pageX - 40 + "px")
-                    .style("top", event.pageY - 60 + "px");
-            })
-            .on('mouseout', function () {
-                d3.select(this).transition()
-                    .duration(1)
-                    .attr('opacity', 0.6);
-                // remove tooltip
-                div.transition()
-                    .duration(0)
-                    .style("opacity", 0);
-            });
+            .style("stroke-dasharray", ("1, 1"));
 
 
         // draw bed9
@@ -836,31 +829,6 @@ function new_target_selector(new_data) {
     filter_query_button_by_target(t_name);
 }
 
-
-function difference_in_mid_point(data) {
-    rtn = {};
-    var temp_c2_nms = data.map(d => d.c2_nm);
-    var c2_nms = [...new Set(temp_c2_nms)];
-    //console.log("names in use?" + c2_nms + temp_c2_nms);
-    //const myList = [1,4,5,1,2,4,5,6,7];
-    //const unique = [...new Set(myList)];
-    for (const c2_nm of c2_nms) {
-        var mid_target = 0;
-        var mid_query = 0;
-        var total = 0;
-
-        data.map(function (d) {
-            if (d.c2_nm == c2_nm) {
-                var weight = (d.c2_en - d.c2_st);
-                mid_target += weight * (d.c1_en + d.c1_st) / 2;
-                mid_query += weight * (d.c2_en + d.c2_st) / 2;
-                total += weight;
-            }
-        });
-        rtn[c2_nm] = ((mid_target - mid_query) / total)
-    }
-    return rtn
-}
 
 function add_text(container) {
     // target text         

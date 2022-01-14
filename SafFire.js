@@ -14,7 +14,7 @@ var width = Math.round(800 * scale);
 var container = "";
 var max_len = "";
 var zoom = "";
-var MAX_BED_ITEMS = 1000;
+var MAX_BED_ITEMS = 2000;
 var BED_COUNT = 1;
 var REF = get_url_elm("ref");
 var QUERY = get_url_elm("query");
@@ -35,7 +35,7 @@ var bed9_data = {
 var zoom_bed_9 = bed9_data;
 var bed_yscale_mod = d3.scaleBand()//d3.scaleBand()
     .domain(Object.keys(bed9_data))
-    .range([0, 20.0]);
+    .range([0, 30.0]);
 
 // thing I want to be global
 var t_name = "";
@@ -130,7 +130,6 @@ function miropeats_d3(data) {
     } else {
         other_y_poses.push(margin.top + 20);
     }
-
     console.log("other_y_poses: " + other_y_poses);
     // yscale
     var yscale_d = d3.scaleOrdinal()//d3.scaleBand()
@@ -310,11 +309,11 @@ function miropeats_d3(data) {
         }
 
         if (d.ct == t_name) {
-            var y = yscale_d(d.ct) + bed_yscale_mod(d.file) + 5;
+            var y = yscale_d(d.ct) + bed_yscale_mod(d.file) / 2.0 + 5;
         } else {
-            var y = yscale_d(d.ct) - bed_yscale_mod(d.file);
+            var y = yscale_d(d.ct) - bed_yscale_mod(d.file) / 2.0;
         }
-        var tri_width = bed_yscale_mod.bandwidth() / 2.0;
+        var tri_width = bed_yscale_mod.bandwidth() / 1.5;
         path.moveTo(start, y - tri_width);
         path.lineTo(start, y + tri_width);
         path.lineTo(end, y);
@@ -431,27 +430,29 @@ function miropeats_d3(data) {
                     console.error('Async: Could not copy text: ', err);
                 });
             })
-            .on('mousemove', function (event) {
-                // add the tooltip
-                div.transition()
-                    .duration(100)
-                    .style("opacity", .8);
-                div.html(
-                    "<b>Click to copy coordinates</b>"
-                )
-                    .style("left", event.pageX - 100 + "px")
-                    .style("top", event.pageY + "px")
-                    .style("border-width", "0px");
-            })
-            .on('mouseout', function () {
-                d3.select(this).transition()
-                    .duration(1)
-                    .attr('opacity', 1);
-                // remove tooltip
-                div.transition()
-                    .duration(0)
-                    .style("opacity", 0);
-            })
+        /*
+        // this just messes things up so I am hiding it
+        .on('mousemove', function (event) {
+            // add the tooltip
+            div.transition()
+                .duration(100)
+                .style("opacity", .8);
+            div.html(
+                "<b>Click to copy coordinates</b>"
+            )
+                .style("left", event.pageX - 100 + "px")
+                .style("top", event.pageY + "px")
+                .style("border-width", "0px");
+        })
+        .on('mouseout', function () {
+            d3.select(this).transition()
+                .duration(1)
+                .attr('opacity', 1);
+            // remove tooltip
+            div.transition()
+                .duration(0)
+                .style("opacity", 0);
+        })*/
 
         // filter for region of interest! 
         var zoom_data = aln_data.filter(function (d) {

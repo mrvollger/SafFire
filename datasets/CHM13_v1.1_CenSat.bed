@@ -1,4 +1,4 @@
-ct	st	en	name	score	strand	tst	ten	color
+#ct	st	en	name	score	strand	tst	ten	color
 chr1	121405145	121406286	censat_1_1(rnd-6_family-4384)	100	.	121405145	121406286	0,204,204
 chr1	121619169	121625213	hor_1_1(S3C1H2-A,B,C)	100	.	121619169	121625213	255,146,0
 chr1	121625213	121667941	hor_1_2(S3C1H2-A,B)	100	.	121625213	121667941	255,146,0

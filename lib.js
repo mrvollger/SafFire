@@ -221,9 +221,9 @@ function create_bed9(data, bed_file, is_query) {
     console.log(`creating bed data from (${is_query})` + bed_file);
 
     tmp_bed9_data = data.map(function (d) {
-        var temp_name = d.ct;
+        var temp_name = d["#ct"];
         if (is_query) {
-            temp_name = "Query:" + d.ct;
+            temp_name = "Query:" + d["#ct"];
         };
         return {
             ct: temp_name,

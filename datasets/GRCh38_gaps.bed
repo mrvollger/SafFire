@@ -1,4 +1,4 @@
-#ct	st	en	name	score	strand	tst	ten	color
+#ct	st	en	name	score	strand	tst	ten	color	b_ct	b_sz	b_st
 chr1	0	10000
 chr1	207666	257666
 chr1	297968	347968

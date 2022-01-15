@@ -14,7 +14,7 @@ var width = Math.round(800 * scale);
 var container = "";
 var max_len = "";
 var zoom = "";
-var MAX_BED_ITEMS = 2000;
+var MAX_BED_ITEMS = 1000;
 var BED_COUNT = 1;
 var REF = get_url_elm("ref");
 var QUERY = get_url_elm("query");
@@ -35,7 +35,7 @@ var bed9_data = {
 var zoom_bed_9 = bed9_data;
 var bed_yscale_mod = d3.scaleBand()//d3.scaleBand()
     .domain(Object.keys(bed9_data))
-    .range([0, 30.0]);
+    .range([0, 20.0]);
 
 // thing I want to be global
 var t_name = "";
@@ -204,9 +204,6 @@ function miropeats_d3(data) {
         };
         // color alpha on identity 
         var opacity = alpha_scale(perid);
-        if (o_c1_en < st && o_c1_st < st) {
-            opacity = 0;
-        }
         // connect c1 start and end
         path.moveTo(c1_st, c1_h);
         path.lineTo(c1_en, c1_h);
@@ -295,34 +292,53 @@ function miropeats_d3(data) {
     }
 
     function draw_bed(d, i) {
+
+        // setup height
+        if (d.ct == t_name) {
+            var y = yscale_d(d.ct) + bed_yscale_mod(d.file) / 1.0 + 5;
+        } else {
+            var y = yscale_d(d.ct) - bed_yscale_mod(d.file) / 1.0 - 5;
+        }
+        var tri_width = bed_yscale_mod.bandwidth() / 2;
+
         const path = d3.path();
+        // draw the triangle(s)
+        for (var i = 0; i < d.b_st.length; i++) {
+            var size = d.b_sz[i];
+            var offset = d.b_st[i];
+
+            var start = xz_offset(d.st + offset, d.ct);
+            var end = xz_offset(d.st + offset + size, d.ct);
+            if (d.strand == "-") {
+                start = xz_offset(d.st + offset + size, d.ct);
+                end = xz_offset(d.st + offset, d.ct);
+            }
+
+            path.moveTo(start, y - tri_width);
+            path.lineTo(start, y + tri_width);
+            path.lineTo(end, y);
+            path.lineTo(start, y - tri_width);
+        }
+        path.closePath();
+
+        // draw connecting lines
+        const path2 = d3.path();
+        path2.moveTo(xz_offset(d.st, d.ct), y - tri_width / 6);
+        path2.lineTo(xz_offset(d.en, d.ct), y - tri_width / 6);
+        path2.lineTo(xz_offset(d.en, d.ct), y + tri_width / 6);
+        path2.lineTo(xz_offset(d.st, d.ct), y + tri_width / 6);
+        path2.lineTo(xz_offset(d.st, d.ct), y - tri_width / 6);
+        path2.closePath();
+
+        // add the straight line
         container.append("path")
             .attr("d", path)
-            .attr("color", "black")
-            .attr("stroke-width", 2);
-
-        var start = xz_offset(d.st, d.ct);
-        var end = xz_offset(d.en, d.ct);
-        if (d.strand == "-") {
-            start = xz_offset(d.en, d.ct);
-            end = xz_offset(d.st, d.ct);
-        }
-
-        if (d.ct == t_name) {
-            var y = yscale_d(d.ct) + bed_yscale_mod(d.file) / 2.0 + 5;
-        } else {
-            var y = yscale_d(d.ct) - bed_yscale_mod(d.file) / 2.0;
-        }
-        var tri_width = bed_yscale_mod.bandwidth() / 1.5;
-        path.moveTo(start, y - tri_width);
-        path.lineTo(start, y + tri_width);
-        path.lineTo(end, y);
-        path.lineTo(start, y - tri_width);
-        path.closePath();
+            .attr("stroke", "none")
+            .attr("fill", d3.rgb("rgb(" + d.color + ")"));
 
         // make the highlight regions 
         container.append("path")
-            .attr("d", path)
+            .attr("d", path2)
             .attr("stroke", "none")
             .attr("fill", d3.rgb("rgb(" + d.color + ")"))
             .attr('opacity', '0.8')

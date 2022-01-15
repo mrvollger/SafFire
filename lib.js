@@ -9,8 +9,8 @@ function get_url_elm(tag) {
 }
 
 function set_default_hash() {
-    window.location.hash = "#ref=CHM13_v1.1&query=CHM1";
     window.location.hash = "#ref=CHM13_v1.1&query=GRCh38";
+    window.location.hash = "#ref=CHM13_v1.1&query=CHM1";
 }
 
 function set_user_hash() {
@@ -191,7 +191,7 @@ function add_to_bed_contig_name(data, addition) {
     tmp = data.map(d => {
         var st = d.st;
         var en = d.en;
-        var strand = d.strand
+        var strand = d.strand;
         if (addition == "-") {
             st = dict_lengths[d.ct] - d.en;
             en = dict_lengths[d.ct] - d.st;
@@ -210,10 +210,21 @@ function add_to_bed_contig_name(data, addition) {
             tst: d.tst,
             ten: d.ten,
             color: d.color,
+            b_ct: d.b_ct,
+            b_st: d.b_st,
+            b_sz: d.b_sz,
             file: d.file
         };
     });
     return tmp;
+}
+
+// 
+function split_bed_blocks(s) {
+    var rtn = s.split(",").map(function (d) {
+        return +d; // convert to number
+    });
+    return rtn;
 }
 
 // read in bed_9 data
@@ -225,6 +236,11 @@ function create_bed9(data, bed_file, is_query) {
         if (is_query) {
             temp_name = "Query:" + d["#ct"];
         };
+        if (d.b_ct == undefined | d.b_ct == "") {
+            d["b_ct"] = 1;
+            d["b_st"] = "0";
+            d["b_sz"] = `${+d.en - +d.st}`;
+        }
         return {
             ct: temp_name,
             st: +d.st,
@@ -234,6 +250,9 @@ function create_bed9(data, bed_file, is_query) {
             tst: +d.tst,
             ten: +d.ten,
             color: d.color,
+            b_ct: +d.b_ct,
+            b_st: split_bed_blocks(d.b_st),
+            b_sz: split_bed_blocks(d.b_sz),
             file: bed_file
         };
     });
@@ -258,7 +277,8 @@ function read_in_bed9_defaults() {
     var bed_files = {
         ref: [
             `datasets/${REF}_CenSat.bed`,
-            `datasets/${REF}_dupmasker_colors.bed`
+            `datasets/${REF}_dupmasker_colors.bed`,
+            `datasets/${REF}_genes.bed`,
         ],
         query: [
             `datasets/${QUERY}_dupmasker_colors.bed`,

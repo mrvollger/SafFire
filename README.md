@@ -6,7 +6,7 @@ Please visit the website to use: [https://mrvollger.github.io/SafFire/](https://
 
 You can use [rustybam](https://mrvollger.github.io/rustybam/) to build the inputs for SafFire.
 
-## Example of how to prepare your genome alignment for SafFire
+## How to prepare your genome alignment for SafFire
 
 ```bash
 rb trim-paf {input.paf} `#trims back alignments that align the same query sequence more than once` \

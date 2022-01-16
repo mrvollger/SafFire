@@ -4,9 +4,9 @@
 
 Please visit the website to use: [https://mrvollger.github.io/SafFire/](https://mrvollger.github.io/SafFire/)
 
-You can use [rustybam](https://mrvollger.github.io/rustybam/) to build the inputs for SafFire.
-
 ## How to prepare your genome alignment for SafFire
+
+To prepare PAF alignments for SafFire, you will need to install [rustybam](https://mrvollger.github.io/rustybam/). Once installed you can use the following command to convert your PAF file into a format that SafFire can read:
 
 ```bash
 rb trim-paf {input.paf} `#trims back alignments that align the same query sequence more than once` \

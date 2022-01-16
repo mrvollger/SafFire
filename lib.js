@@ -9,8 +9,8 @@ function get_url_elm(tag) {
 }
 
 function set_default_hash() {
-    window.location.hash = "#ref=CHM13_v1.1&query=GRCh38";
     window.location.hash = "#ref=CHM13_v1.1&query=CHM1";
+    window.location.hash = "#ref=CHM13_v1.1&query=GRCh38";
 }
 
 function set_user_hash() {
@@ -181,6 +181,7 @@ function create_table(data) {
     var svg = d3.select("#" + chart_name);
     svg.selectAll("*").remove();
     new_target_selector(l_aln_data);
+    genome_selector();
     miropeats_d3(l_aln_data);
     parse_url_change();
 };
@@ -194,6 +195,8 @@ function add_to_bed_contig_name(data, addition) {
         var strand = d.strand;
         if (addition == "-") {
             st = dict_lengths[d.ct] - d.en;
+
+
             en = dict_lengths[d.ct] - d.st;
             if (strand == "-") {
                 strand = "+";
@@ -567,4 +570,56 @@ function save_svg() {
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);
+}
+
+
+
+
+
+// genome selectors
+function genome_selector() {
+    // add the options to the button
+    var q_genomes = ["GRCh38", "CHM1"]
+    var t_genomes = ["CHM13_v1.1"]
+
+    console.log("TARGET GENOMES: " + t_genomes);
+    d3.selectAll("#targetGenome").selectAll("option").remove();
+    targetGenome
+        .selectAll('#targetGenome')
+        .data(t_genomes)
+        .enter()
+        .append('option')
+        .text(function (d) { return d; }) // text showed in the menu
+        .attr("value", function (d) { return d; });
+
+    console.log("QUERY GENOMES: " + q_genomes);
+    d3.selectAll("#queryGenome").selectAll("option").remove();
+    queryGenome
+        .selectAll('#queryGenome')
+        .data(q_genomes)
+        .enter()
+        .append('option')
+        .text(function (d) { return d; }) // text showed in the menu
+        .attr("value", function (d) { return d; });
+
+    // set the right defaults 
+    var element = document.getElementById("targetGenome");
+    element.value = REF;
+    var element = document.getElementById("queryGenome");
+    element.value = QUERY;
+
+    //let element = document.getElementById('targetButton');
+
+}
+
+function update_genomes() {
+    var sel = document.getElementById('targetGenome');
+    var target = sel.options[sel.selectedIndex].value
+
+    var sel = document.getElementById('queryGenome');
+    var query = sel.options[sel.selectedIndex].value
+
+    // update the  hash
+    window.location.hash = `#ref=${target}&query=${query}`;
+    console.log("genome selection:" + target + " " + query);
 }

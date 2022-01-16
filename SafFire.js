@@ -18,6 +18,8 @@ var MAX_BED_ITEMS = 1000;
 var BED_COUNT = 1;
 var REF = get_url_elm("ref");
 var QUERY = get_url_elm("query");
+var targetGenome = d3.select("#targetGenome");
+var queryGenome = d3.select("#queryGenome");
 var draw_bed = function (d) { }
 
 var l_aln_data = [
@@ -176,8 +178,6 @@ function miropeats_d3(data) {
         o_c2_st, o_c2_en,
         perid, strand) {
 
-        var st = Math.max(0, Math.round(xz.domain()[0]));
-        var en = Math.min(aln_data[0].c1_len, Math.round(xz.domain()[1]));
         //
         var c1_st = xz(o_c1_st), c1_en = xz(o_c1_en),
             c2_st = xz_offset(o_c2_st, c2_nm), c2_en = xz_offset(o_c2_en, c2_nm);
@@ -561,6 +561,36 @@ function miropeats_d3(data) {
         draw_x_and_y_scale();
         draw_data(xz)
     }
+
+    d3.select('#invert').on('click', function () {
+        console.log("invert button!!!");
+        aln_data = aln_data.map(function (d) {
+            var s = "+";
+            if (d.strand == "+") {
+                s = "-";
+            }
+            return {
+                c1_nm: d.c1_nm,
+                c1_st: +d.c1_st,
+                c1_en: +d.c1_en,
+                c1_len: +d.c1_len,
+                strand: s,
+                c2_nm: d.c2_nm,
+                c2_st: d.c2_len - d.c2_en,
+                c2_en: d.c2_len - d.c2_st,
+                c2_len: +d.c2_len,
+                id: +d.id,
+            };
+        });
+        d3.selectAll('#div.coordinates').remove();
+        d3.selectAll('#div.tooltip').remove();
+        d3.selectAll("svg > *").remove();
+        d3.selectAll('.coordinates').remove();
+        draw_x_and_y_scale();
+        draw_data(xz)
+    });
+
+
 }
 
 
@@ -581,6 +611,8 @@ function change_contigs() {
     var aln_data = l_aln_data.filter(function (e) {
         return e.c1_nm == t_name //&& e.c2_nm == q_name;
     });
+    d3.selectAll('#div.coordinates').remove();
+    d3.selectAll('#div.tooltip').remove();
     miropeats_d3(aln_data)
 }
 
@@ -605,30 +637,14 @@ queryButton.on("change", function (d) {
 
 
 
-
-d3.select('#invert').on('click', function () {
-    console.log("invert button!!!");
-    l_aln_data = l_aln_data.map(function (d) {
-        var s = "+";
-        if (d.strand == "+") {
-            s = "-";
-        }
-        return {
-            c1_nm: d.c1_nm,
-            c1_st: +d.c1_st,
-            c1_en: +d.c1_en,
-            c1_len: +d.c1_len,
-            strand: s,
-            c2_nm: d.c2_nm,
-            c2_st: d.c2_len - d.c2_en,
-            c2_en: d.c2_len - d.c2_st,
-            c2_len: +d.c2_len,
-            id: +d.id,
-        };
-    });
-    d3.selectAll("svg").remove();
-    d3.selectAll('.coordinates').remove();
-    miropeats_d3(l_aln_data);
-});
-
 miropeats_d3(l_aln_data);
+
+
+
+// check for updates to the genomes selected
+targetGenome.on("change", function (d) {
+    update_genomes();
+});
+queryGenome.on("change", function (d) {
+    update_genomes();
+});

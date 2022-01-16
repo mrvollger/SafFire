@@ -20,6 +20,7 @@ var REF = get_url_elm("ref");
 var QUERY = get_url_elm("query");
 var targetGenome = d3.select("#targetGenome");
 var queryGenome = d3.select("#queryGenome");
+var space_for_bed = 30.0;
 var draw_bed = function (d) { }
 
 var l_aln_data = [
@@ -35,9 +36,10 @@ var bed9_data = {
     ]
 };
 var zoom_bed_9 = bed9_data;
+// set up bed scales 
 var bed_yscale_mod = d3.scaleBand()//d3.scaleBand()
     .domain(Object.keys(bed9_data))
-    .range([0, 20.0]);
+    .range([0, space_for_bed]);
 
 // thing I want to be global
 var t_name = "";
@@ -74,17 +76,14 @@ var targetButton = d3.select("#targetButton");
 new_target_selector(l_aln_data);
 
 function miropeats_d3(data) {
-    var aln_data = data;
     var t_names = [...new Set(data.map(d => d.c1_nm))].sort(collator.compare);
     var q_names = [...new Set(data.map(d => d.c2_nm))];
-
     t_name = t_names[0];
-    //q_name = q_names[0];
+
     var sel = document.getElementById('queryButton');
     q_name = sel.options[sel.selectedIndex].value
 
-    //q_names = [q_name];
-    // filter for contig of interest! 
+    //filter for contig of interest! 
     var aln_data = data.filter(function (e) {
         if (q_name == "All") {
             return e.c1_nm == t_name && e.id > 0 && Math.abs(e.c1_en - e.c1_st) > 1 && Math.abs(e.c2_en - e.c2_st) > 1;
@@ -92,6 +91,21 @@ function miropeats_d3(data) {
             return e.c1_nm == t_name && e.c2_nm == q_name && e.id > 0 && Math.abs(e.c1_en - e.c1_st) > 1 && Math.abs(e.c2_en - e.c2_st) > 1;
         }
     });
+
+    // filter current bed 9 data for the selection
+    var cur_bed9_data = bed9_data;
+    // not working on initial load
+    /*
+    var cur_q_names = [...new Set(aln_data.map(d => d.c2_nm))];
+    var cur_bed9_data = {};
+    for (var key in bed9_data) {
+        var tmp_bed9_data = bed9_data[key].filter(function (d) {
+            return d.ct == t_name || cur_q_names.includes(d.ct);
+        });
+        cur_bed9_data[key] = tmp_bed9_data;
+    }
+    */
+
 
     q_names = order_q_names_by_start_point(aln_data);
     console.log("q_names: " + q_names);
@@ -146,7 +160,7 @@ function miropeats_d3(data) {
     var yscale_c = d3.scaleLinear()
         .domain([d3.max([89, d3.min(aln_data, function (d) { return d.id })]),
         d3.max(aln_data, function (d) { return d.id })])
-        .range([height, height - 2 * margin.bottom + label_margin]);
+        .range([height, height - space_for_bed + 10 - margin.bottom + label_margin]);
 
     // opacity scale
     alpha_scale = d3.scaleLinear()
@@ -369,7 +383,7 @@ function miropeats_d3(data) {
     function draw_x_and_y_scale() {
         // draw the x axis 
         var xAxis = (g, x) => g
-            .attr('transform', `translate(0, ${height * 0.855 - margin.bottom})`)
+            .attr('transform', `translate(0, ${height * 0.8 + 10 + space_for_bed - margin.bottom})`)
             .style("font", "11px helvetica")
             .call(d3.axisBottom(x)
                 .ticks(10)
@@ -530,8 +544,8 @@ function miropeats_d3(data) {
         draw_x_and_y_scale();
 
         // draw bed9
-        for (var key in bed9_data) {
-            var tmp_bed9_data = bed9_data[key];
+        for (var key in cur_bed9_data) {
+            var tmp_bed9_data = cur_bed9_data[key];
             zoom_bed_9 = tmp_bed9_data.filter(function (d) {
                 return d.ct == t_name && d.en >= st && d.st <= en
                     || start_end_dict.hasOwnProperty(d.ct) && d.en + c2_offset[d.ct] >= st && d.st + c2_offset[d.ct] <= en;
@@ -557,13 +571,13 @@ function miropeats_d3(data) {
     function zoomed(event) {
         xz = event.transform.rescaleX(xscale);
         d3.selectAll("svg > *").remove();
-        d3.selectAll('.coordinates').remove();
         draw_x_and_y_scale();
         draw_data(xz)
     }
 
     d3.select('#invert').on('click', function () {
         console.log("invert button!!!");
+        // TODO: also invert the bed files
         aln_data = aln_data.map(function (d) {
             var s = "+";
             if (d.strand == "+") {
@@ -582,8 +596,7 @@ function miropeats_d3(data) {
                 id: +d.id,
             };
         });
-        d3.selectAll('#div.coordinates').remove();
-        d3.selectAll('#div.tooltip').remove();
+        clean_hover_text();
         d3.selectAll("svg > *").remove();
         d3.selectAll('.coordinates').remove();
         draw_x_and_y_scale();
@@ -611,8 +624,7 @@ function change_contigs() {
     var aln_data = l_aln_data.filter(function (e) {
         return e.c1_nm == t_name //&& e.c2_nm == q_name;
     });
-    d3.selectAll('#div.coordinates').remove();
-    d3.selectAll('#div.tooltip').remove();
+    clean_hover_text();
     miropeats_d3(aln_data)
 }
 

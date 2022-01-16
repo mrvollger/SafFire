@@ -270,7 +270,7 @@ function create_bed9(data, bed_file, is_query) {
     console.log(Object.keys(bed9_data));
     bed_yscale_mod = d3.scaleBand()//d3.scaleBand()
         .domain(Object.keys(bed9_data))
-        .range([0, 20.0]);
+        .range([0, space_for_bed]);
 };
 
 // this function check for bed files that exist for these references and loads them in
@@ -622,4 +622,10 @@ function update_genomes() {
     // update the  hash
     window.location.hash = `#ref=${target}&query=${query}`;
     console.log("genome selection:" + target + " " + query);
+}
+
+
+function clean_hover_text() {
+    document.querySelectorAll('.tooltip').forEach(e => e.remove());
+    document.querySelectorAll('.coordinates').forEach(e => e.remove());
 }

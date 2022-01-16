@@ -20,7 +20,7 @@ var REF = get_url_elm("ref");
 var QUERY = get_url_elm("query");
 var targetGenome = d3.select("#targetGenome");
 var queryGenome = d3.select("#queryGenome");
-var space_for_bed = 30.0;
+var space_for_bed = 20.0;
 var draw_bed = function (d) { }
 
 var l_aln_data = [
@@ -137,7 +137,7 @@ function miropeats_d3(data) {
 
     other_y_poses = [];//Array(q_names.length).fill(margin.top).map(function (d, i) {d + i});
     other_y_poses.push(0.8 * height - margin.bottom);
-    var dist_between_q_lines = Math.min(15, 80 / q_names.length);
+    var dist_between_q_lines = Math.min(space_for_bed, 80 / q_names.length);
     console.log("dist_between_q_lines: " + dist_between_q_lines);
     if (q_name == "All") {
         for (var i = q_names.length - 1; i >= 0; i--) {
@@ -330,7 +330,8 @@ function miropeats_d3(data) {
 
             path.moveTo(start, y - tri_width);
             path.lineTo(start, y + tri_width);
-            path.lineTo(end, y);
+            path.lineTo(end, y + tri_width / 2.5);
+            path.lineTo(end, y - tri_width / 2.5);
             path.lineTo(start, y - tri_width);
         }
         path.closePath();
@@ -655,6 +656,6 @@ queryGenome.on("change", function (d) {
     update_genomes();
 });
 
-// miropeats_d3(l_aln_data);
+
 // draws bed data on the first load
 allow_bed_to_load();

@@ -182,7 +182,8 @@ function create_table(data) {
     svg.selectAll("*").remove();
     new_target_selector(l_aln_data);
     genome_selector();
-    miropeats_d3(l_aln_data);
+    //miropeats_d3(l_aln_data);
+    change_contigs();
     parse_url_change();
 };
 

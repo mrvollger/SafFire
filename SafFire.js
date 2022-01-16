@@ -36,6 +36,7 @@ var bed9_data = {
     ]
 };
 var zoom_bed_9 = bed9_data;
+var cur_bed9_data = bed9_data;
 // set up bed scales 
 var bed_yscale_mod = d3.scaleBand()//d3.scaleBand()
     .domain(Object.keys(bed9_data))
@@ -92,23 +93,22 @@ function miropeats_d3(data) {
         }
     });
 
+    // q_names for this contig
+    q_names = order_q_names_by_start_point(aln_data);
+    console.log("q_names: " + q_names);
+
     // filter current bed 9 data for the selection
-    var cur_bed9_data = bed9_data;
+    // var cur_bed9_data = bed9_data;
     // not working on initial load
-    /*
     var cur_q_names = [...new Set(aln_data.map(d => d.c2_nm))];
-    var cur_bed9_data = {};
+    cur_bed9_data = {};
     for (var key in bed9_data) {
         var tmp_bed9_data = bed9_data[key].filter(function (d) {
             return d.ct == t_name || cur_q_names.includes(d.ct);
         });
         cur_bed9_data[key] = tmp_bed9_data;
     }
-    */
 
-
-    q_names = order_q_names_by_start_point(aln_data);
-    console.log("q_names: " + q_names);
 
     // height += 20 * q_names.length;
     // set up the view box
@@ -548,7 +548,7 @@ function miropeats_d3(data) {
             var tmp_bed9_data = cur_bed9_data[key];
             zoom_bed_9 = tmp_bed9_data.filter(function (d) {
                 return d.ct == t_name && d.en >= st && d.st <= en
-                    || start_end_dict.hasOwnProperty(d.ct) && d.en + c2_offset[d.ct] >= st && d.st + c2_offset[d.ct] <= en;
+                    || d.en + c2_offset[d.ct] >= st && d.st + c2_offset[d.ct] <= en;
             });
             if (zoom_bed_9.length < MAX_BED_ITEMS) {
                 container.selectAll('g.item2')
@@ -647,12 +647,6 @@ queryButton.on("change", function (d) {
 });
 
 
-
-
-miropeats_d3(l_aln_data);
-
-
-
 // check for updates to the genomes selected
 targetGenome.on("change", function (d) {
     update_genomes();
@@ -660,3 +654,7 @@ targetGenome.on("change", function (d) {
 queryGenome.on("change", function (d) {
     update_genomes();
 });
+
+// miropeats_d3(l_aln_data);
+// draws bed data on the first load
+allow_bed_to_load();

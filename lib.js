@@ -296,6 +296,11 @@ function read_in_bed9_defaults() {
                 .then(function (d) {   // Handle the resolved Promise
                     return create_bed9(d, bed_file, key == "query");
                 });
+            /*
+            d3.text(bed_file, function (text) {
+                data = d3.csvParseRows(text);
+                create_bed9(data, bed_file, key == "query");
+            });*/
         }
     }
 }
@@ -355,6 +360,11 @@ function uploadbed(el) {
         var data = d3.tsvParse(bed, function (d) {
             return d;
         });
+        /*var data = [];
+        d3.text(bed, function (text) {
+            data = d3.tsvParseRows(text);
+        });*/
+
         console.log("upload bed parse");
         console.log(data[0]);
         create_bed9(data, BED_COUNT);
@@ -535,9 +545,6 @@ function add_text(container) {
 
 
 
-
-
-
 ///////////////////////////////////
 function view_svg() {
     var st = Math.round(xz.domain()[0]);
@@ -613,6 +620,8 @@ function genome_selector() {
 }
 
 function update_genomes() {
+    clean_hover_text();
+
     var sel = document.getElementById('targetGenome');
     var target = sel.options[sel.selectedIndex].value
 
@@ -622,10 +631,19 @@ function update_genomes() {
     // update the  hash
     window.location.hash = `#ref=${target}&query=${query}`;
     console.log("genome selection:" + target + " " + query);
+
+    allow_bed_to_load()
 }
 
 
 function clean_hover_text() {
     document.querySelectorAll('.tooltip').forEach(e => e.remove());
     document.querySelectorAll('.coordinates').forEach(e => e.remove());
+}
+
+
+function allow_bed_to_load() {
+    sleep(3000).then(function () {
+        change_contigs();
+    });
 }

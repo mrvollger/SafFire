@@ -665,3 +665,39 @@ function allow_bed_to_load() {
         change_contigs();
     });
 }
+
+// draw a bed path
+function bed_path(path, d, div) {
+    container.append("path")
+        .attr("d", path)
+        .attr("stroke", "none")
+        .attr("fill", d3.rgb("rgb(" + d.color + ")"))
+        .attr("opacity", 0.8)
+        .on('mousemove', function (event) {
+            // add the tooltip
+            div.transition()
+                .duration(100)
+                .style("opacity", 0.9);
+            div.html(
+                `<b>${d.name}</b>`
+            )
+                .style("left", event.pageX + "px")
+                .style("top", event.pageY - 20 + "px")
+                .style("border-width", "0px");
+            d3.select(this).transition()
+                .duration(100)
+                .attr('opacity', 1)
+                .attr("stroke", "black")
+                .attr("stroke-width", "0.75px");
+        })
+        .on('mouseout', function () {
+            d3.select(this).transition()
+                .duration(1)
+                .attr('opacity', 0.8)
+                .attr("stroke", "none");
+            // remove tooltip
+            div.transition()
+                .duration(0)
+                .style("opacity", 0);
+        })
+}

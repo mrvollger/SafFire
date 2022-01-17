@@ -346,46 +346,11 @@ function miropeats_d3(data) {
         path2.lineTo(xz_offset(d.st, d.ct), y - tri_width / tdiv);
         path2.closePath();
 
-        // add the straight line
-        container.append("path")
-            .attr("d", path2)
-            .attr("stroke", "none")
-            .attr("fill", d3.rgb("rgb(" + d.color + ")"));
-
         // make the highlight regions 
-        container.append("path")
-            .attr("d", path)
-            .attr("stroke", "none")
-            .attr("fill", d3.rgb("rgb(" + d.color + ")"))
-            .attr("opacity", 0.8)
-            .on('mousemove', function (event) {
-                // add the tooltip
-                div.transition()
-                    .duration(100)
-                    .style("opacity", 0.9);
-                div.html(
-                    `<b>${d.name}</b>`
-                )
-                    .style("left", event.pageX + "px")
-                    .style("top", event.pageY - 20 + "px")
-                    .style("border-width", "0px");
-                d3.select(this).transition()
-                    .duration(100)
-                    .attr('opacity', 1)
-                    .attr("stroke", "black")
-                    .attr("stroke-width", "0.75px");
-                //.attr("stroke", "40px solid black");
-            })
-            .on('mouseout', function () {
-                d3.select(this).transition()
-                    .duration(1)
-                    .attr('opacity', 0.8)
-                    .attr("stroke", "none");
-                // remove tooltip
-                div.transition()
-                    .duration(0)
-                    .style("opacity", 0);
-            })
+        bed_path(path, d, div);
+
+        // add the straight line
+        bed_path(path2, d, div)
     }
 
     function draw_x_and_y_scale() {

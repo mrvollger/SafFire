@@ -14,7 +14,7 @@ var width = Math.round(800 * scale);
 var container = "";
 var max_len = "";
 var zoom = "";
-var MAX_BED_ITEMS = 1000;
+var MAX_BED_ITEMS = 500;
 var BED_COUNT = 1;
 var REF = get_url_elm("ref");
 var QUERY = get_url_elm("query");
@@ -38,14 +38,18 @@ var bed9_data = {
 var zoom_bed_9 = bed9_data;
 var cur_bed9_data = bed9_data;
 // set up bed scales 
-var bed_yscale_mod = d3.scaleBand()//d3.scaleBand()
+var bed_yscale_mod = d3.scaleBand()
+    .domain(Object.keys(bed9_data))
+    .range([0, space_for_bed]);
+
+var bed_yscale_mod_query = d3.scaleBand()
     .domain(Object.keys(bed9_data))
     .range([0, space_for_bed]);
 
 // thing I want to be global
 var t_name = "";
 var q_name = "";
-//var c2_offset = { "": 0, NULL: 0 }; // how much to offset the second contig to allow for centering 
+// offset for each query contigs with default of 0.
 var c2_offset = new Proxy({}, {
     get: (target, name) => name in target ? target[name] : 0
 })
@@ -59,7 +63,7 @@ const label_margin = 0;
 const forward_color = "#2081f9";
 const reverse_color = "#f99820";
 
-// load in the t2t alignments as defualt 
+// load in the t2t alignments as default 
 var tbl_file = `datasets/${QUERY}_to_${REF}.tbl`
 d3.tsv(tbl_file)
     .then(function (d) {   // Handle the resolved Promise
@@ -148,11 +152,9 @@ function miropeats_d3(data) {
     }
     console.log("other_y_poses: " + other_y_poses);
     // yscale
-    var yscale_d = d3.scaleOrdinal()//d3.scaleBand()
+    var yscale_d = d3.scaleOrdinal()
         .domain([t_name].concat(q_names))
         .range(other_y_poses)
-    //.paddingInner(1)
-    //.align(0);
     console.log(yscale_d.domain());
     console.log(yscale_d.range());
 
@@ -192,18 +194,16 @@ function miropeats_d3(data) {
         o_c2_st, o_c2_en,
         perid, strand) {
 
-        //
         var c1_st = xz(o_c1_st), c1_en = xz(o_c1_en),
             c2_st = xz_offset(o_c2_st, c2_nm), c2_en = xz_offset(o_c2_en, c2_nm);
-        //console.log("pre error?" + c2_nm + " " + c2_st + " " + c2_en);
         var y_perid = yscale_c(perid);
 
 
         const path = d3.path(),
-            c1_h = yscale_d(c1_nm) - label_margin,//+yscale_d.bandwidth(),
-            c2_h = yscale_d(c2_nm) + label_margin, //yscale_d(c2_nm),
-            mid = (c1_h + c2_h) / 2; //yscale((c1_h+c2_h)/2);
-        //console.log(`${c1_h},${c2_h}:${c1_nm},${c2_nm}`);
+            c1_h = yscale_d(c1_nm) - label_margin,
+            c2_h = yscale_d(c2_nm) + label_margin,
+            mid = (c1_h + c2_h) / 2;
+
         container.append("path")
             .attr("d", path)
             .attr("color", "black")
@@ -248,16 +248,16 @@ function miropeats_d3(data) {
                     .duration(100)
                     .style("opacity", .6);
                 div.html(
-                    //label_fmt(o_c2_st) + "-" + label_fmt(o_c2_en) + "<br>"+
-                    d3.format(".1f")(o_c2_en / 1000 - o_c2_st / 1000) + " kbp<br>" +
-                    d3.format(".2f")(perid) + "%<br>" +
-                    d3.format(".1f")(o_c1_en / 1000 - o_c1_st / 1000) + " kbp<br>" +
-                    " <br> "
+                    "Target " + my_coord_fmt(o_c1_st) + "-" + my_coord_fmt(o_c1_en) + "<br>" +
+                    "Query " + my_coord_fmt(o_c2_st) + "-" + my_coord_fmt(o_c2_en) + "<br>" +
+                    //my_coord_fmt(o_c2_en - o_c2_st) + "bp<br>" +
+                    //my_coord_fmt(o_c1_en - o_c1_st) + "bp<br>"
                     //"q_st: " + d3.format(".0f")(o_c2_st) + " <br>" +
-                    //"q_en: " + d3.format(".0f")(o_c2_en) + " <br>" 
+                    //"q_en: " + d3.format(".0f")(o_c2_en) + " <br>" +
+                    my_coord_fmt(perid) + "%<br>"
                 )
                     .style("left", event.pageX - 80 + "px")
-                    .style("top", event.pageY - 20 + "px");
+                    .style("top", event.pageY - 50 + "px");
             })
             .on('mouseout', function () {
                 d3.select(this).transition()
@@ -306,14 +306,14 @@ function miropeats_d3(data) {
     }
 
     function draw_bed(d, i) {
-
         // setup height
         if (d.ct == t_name) {
             var y = yscale_d(d.ct) + bed_yscale_mod(d.file) / 1.0 + 5;
+            var tri_width = bed_yscale_mod.bandwidth() / 2;
         } else {
-            var y = yscale_d(d.ct) - bed_yscale_mod(d.file) / 1.0 - 5;
+            var y = yscale_d(d.ct) - bed_yscale_mod_query(d.file) / 1.0 - 5;
+            var tri_width = bed_yscale_mod_query.bandwidth() / 2;
         }
-        var tri_width = bed_yscale_mod.bandwidth() / 2;
 
         const path = d3.path();
         // draw the triangle(s)
@@ -361,9 +361,8 @@ function miropeats_d3(data) {
                 // add the tooltip
                 div.transition()
                     .duration(100)
-                    .style("opacity", .8);
+                    .style("opacity", 0.9);
                 div.html(
-                    //`<b>${d.st}-${d.en}<br>${d.name}</b>`
                     `<b>${d.name}</b>`
                 )
                     .style("left", event.pageX + "px")
@@ -548,8 +547,9 @@ function miropeats_d3(data) {
         for (var key in cur_bed9_data) {
             var tmp_bed9_data = cur_bed9_data[key];
             zoom_bed_9 = tmp_bed9_data.filter(function (d) {
-                return d.ct == t_name && d.en >= st && d.st <= en
-                    || d.en + c2_offset[d.ct] >= st && d.st + c2_offset[d.ct] <= en;
+                return ((d.ct == t_name && d.en >= st && d.st <= en)
+                    || (d.en + c2_offset[d.ct] >= st && d.st + c2_offset[d.ct] <= en))
+                    && (d.en - d.st > (en - st) / 4000); // make sure it is not too small (1px on 4k screen)
             });
             if (zoom_bed_9.length < MAX_BED_ITEMS) {
                 container.selectAll('g.item2')

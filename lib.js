@@ -217,7 +217,8 @@ function add_to_bed_contig_name(data, addition) {
             b_ct: d.b_ct,
             b_st: d.b_st,
             b_sz: d.b_sz,
-            file: d.file
+            file: d.file,
+            is_query: d.is_query
         };
     });
     return tmp;
@@ -257,7 +258,8 @@ function create_bed9(data, bed_file, is_query) {
             b_ct: +d.b_ct,
             b_st: split_bed_blocks(d.b_st),
             b_sz: split_bed_blocks(d.b_sz),
-            file: bed_file
+            file: bed_file,
+            is_query: is_query
         };
     });
     if (is_query) {
@@ -268,10 +270,18 @@ function create_bed9(data, bed_file, is_query) {
     bed9_data[bed_file] = tmp_bed9_data;
 
     // bed data scale/offset
-    console.log(Object.keys(bed9_data));
-    bed_yscale_mod = d3.scaleBand()//d3.scaleBand()
-        .domain(Object.keys(bed9_data))
-        .range([0, space_for_bed]);
+    var keys = Object.keys(bed9_data)
+        .filter(key => bed9_data[key][0].is_query == is_query);
+    console.log(`KEYS FOR BED FILES ${is_query}`, keys);
+    if (is_query) {
+        bed_yscale_mod_query = d3.scaleBand()
+            .domain(keys)
+            .range([0, space_for_bed]);
+    } else {
+        bed_yscale_mod = d3.scaleBand()
+            .domain(keys)
+            .range([0, space_for_bed]);
+    }
 };
 
 // this function check for bed files that exist for these references and loads them in
@@ -282,7 +292,7 @@ function read_in_bed9_defaults() {
         ref: [
             `datasets/${REF}_CenSat.bed`,
             `datasets/${REF}_dupmasker_colors.bed`,
-            `datasets/${REF}_genes.bed`,
+            `datasets/${REF}_genes_small.bed`,
         ],
         query: [
             `datasets/${QUERY}_dupmasker_colors.bed`,
@@ -643,8 +653,15 @@ function clean_hover_text() {
 }
 
 
+function my_coord_fmt(num, round = false) {
+    if (num > 1e5 && round) {
+        num = Math.round(num / 1000)
+    }
+    return d3.format(".4s")(num)
+}
+
 function allow_bed_to_load() {
-    sleep(3000).then(function () {
+    sleep(2000).then(function () {
         change_contigs();
     });
 }

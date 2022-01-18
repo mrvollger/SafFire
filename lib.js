@@ -406,7 +406,7 @@ function parse_url_change() {
     if (ref != REF || query != QUERY) {
         REF = ref;
         QUERY = query;
-        var tbl_file = `datasets/alignment-tables/${QUERY}_to_${REF}.tbl`
+        var tbl_file = ALIGNMENTS[REF + QUERY]//`datasets/alignment-tables/${QUERY}_to_${REF}.tbl`
         d3.tsv(tbl_file)
             .then(function (d) {   // Handle the resolved Promise
                 return create_table(d);
@@ -596,25 +596,22 @@ function save_svg() {
 
 // genome selectors
 function genome_selector() {
-    // add the options to the button
-    var q_genomes = ["GRCh38", "CHM1"]
-    var t_genomes = ["CHM13_v1.1"]
-
-    console.log("TARGET GENOMES: " + t_genomes);
+    // log the genomes 
+    console.log("TARGET GENOMES: " + T_GENOMES);
     d3.selectAll("#targetGenome").selectAll("option").remove();
     targetGenome
         .selectAll('#targetGenome')
-        .data(t_genomes)
+        .data(T_GENOMES)
         .enter()
         .append('option')
         .text(function (d) { return d; }) // text showed in the menu
         .attr("value", function (d) { return d; });
 
-    console.log("QUERY GENOMES: " + q_genomes);
+    console.log("QUERY GENOMES: " + Q_GENOMES);
     d3.selectAll("#queryGenome").selectAll("option").remove();
     queryGenome
         .selectAll('#queryGenome')
-        .data(q_genomes)
+        .data(Q_GENOMES)
         .enter()
         .append('option')
         .text(function (d) { return d; }) // text showed in the menu

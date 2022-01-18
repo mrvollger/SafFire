@@ -62,6 +62,19 @@ var alpha_scale = "";
 const label_margin = 0;
 const forward_color = "#2081f9";
 const reverse_color = "#f99820";
+var ALIGNMENTS = {};
+
+// load in the metadata
+var Q_GENOMES = new Set();
+var T_GENOMES = new Set();
+d3.csv("datasets/metadata.csv").then(function (data) {
+    data.forEach(function (d) {
+        ALIGNMENTS[d.ref + d.query] = d.file;
+        Q_GENOMES.add(d.query);
+        T_GENOMES.add(d.ref);
+    });
+    genome_selector();
+});
 
 // load in the t2t alignments as default 
 var tbl_file = `datasets/alignment-tables/${QUERY}_to_${REF}.tbl`

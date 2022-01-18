@@ -290,14 +290,14 @@ function read_in_bed9_defaults() {
     zoom_bed_9 = {};
     var bed_files = {
         ref: [
-            `datasets/${REF}_CenSat.bed`,
-            `datasets/${REF}_dupmasker_colors.bed`,
-            `datasets/${REF}_genes_small.bed`,
+            `datasets/${REF}/${REF}_CenSat.bed`,
+            `datasets/${REF}/${REF}_dupmasker_colors.bed`,
+            `datasets/${REF}/${REF}_genes_small.bed`,
         ],
         query: [
-            `datasets/${QUERY}_dupmasker_colors.bed`,
-            `datasets/${QUERY}_gaps.bed`,
-            `datasets/${QUERY}_CenSat.bed`,
+            `datasets/${QUERY}/${QUERY}_dupmasker_colors.bed`,
+            `datasets/${QUERY}/${QUERY}_gaps.bed`,
+            `datasets/${QUERY}/${QUERY}_CenSat.bed`,
         ]
     }
     for (const key in bed_files) {
@@ -406,7 +406,7 @@ function parse_url_change() {
     if (ref != REF || query != QUERY) {
         REF = ref;
         QUERY = query;
-        var tbl_file = `datasets/${QUERY}_to_${REF}.tbl`
+        var tbl_file = `datasets/alignment-tables/${QUERY}_to_${REF}.tbl`
         d3.tsv(tbl_file)
             .then(function (d) {   // Handle the resolved Promise
                 return create_table(d);

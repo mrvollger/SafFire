@@ -283,8 +283,8 @@ function create_bed9(data, bed_file, is_query) {
             .domain(keys)
             .range([0, space_for_bed]);
     }
-    clean_hover_text();
-    change_contigs();
+    allow_bed_to_load();
+    //change_contigs();
 };
 
 // this function check for bed files that exist for these references and loads them in
@@ -385,7 +385,6 @@ function uploadbed(el) {
         console.log(data[0]);
         create_bed9(data, `${BED_COUNT}`, "uploaderquerybed" == el);
         BED_COUNT = BED_COUNT + 1;
-        //allow_bed_to_load();
     }
 };
 

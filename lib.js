@@ -267,6 +267,7 @@ function create_bed9(data, bed_file, is_query) {
         plus = add_to_bed_contig_name(tmp_bed9_data, "+");
         tmp_bed9_data = tmp_bed9_data.concat(minus, plus);
     }
+    console.log("FIRST LINE OF NEW BED DATA", tmp_bed9_data[0]);
     bed9_data[bed_file] = tmp_bed9_data;
 
     // bed data scale/offset
@@ -282,6 +283,8 @@ function create_bed9(data, bed_file, is_query) {
             .domain(keys)
             .range([0, space_for_bed]);
     }
+    clean_hover_text();
+    change_contigs();
 };
 
 // this function check for bed files that exist for these references and loads them in
@@ -349,14 +352,14 @@ function upload_button(el) {
 
 // handle upload bed
 function uploadbed(el) {
-    console.log("in upload_bed: " + el);
+    console.log("UPLOADING BED FILE: " + el);
     var beduploader = document.getElementById(el);
     var bed_reader = new FileReader();
     beduploader.addEventListener("change", loadBedFile, false);
 
     function loadBedFile() {
-        console.log("in loadBedFile");
-        var bedfile = document.querySelector('#uploaderbed').files[0];
+        var bedfile = document.querySelector('#' + el).files[0];
+        console.log(`IN LOAD BED FILE: ${bedfile} ${"uploaderquerybed" == el}`);
         bed_reader.addEventListener("load", parseBedFile, false);
         console.log("in loadBedFile: before reading bedfile text");
         if (bedfile) {
@@ -367,7 +370,8 @@ function uploadbed(el) {
 
     function parseBedFile() {
         console.log("in upload_bed parser");
-        var bed = "ct\tst\ten\tname\tscore\tstrand\ttst\tten\tcolor\n" + bed_reader.result;
+        var bed = "#ct\tst\ten\tname\tscore\tstrand\ttst\tten\tcolor\n" + bed_reader.result;
+        //var bed = bed_reader.result;
         var data = d3.tsvParse(bed, function (d) {
             return d;
         });
@@ -378,8 +382,10 @@ function uploadbed(el) {
 
         console.log("upload bed parse");
         console.log(data[0]);
-        create_bed9(data, BED_COUNT);
+        console.log(data[0]);
+        create_bed9(data, `${BED_COUNT}`, "uploaderquerybed" == el);
         BED_COUNT = BED_COUNT + 1;
+        //allow_bed_to_load();
     }
 };
 

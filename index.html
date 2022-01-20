@@ -119,6 +119,19 @@
     <div id="header" class="header">
       <!-- Initialize a select button -->
       <label class="custom-file-upload">
+        <a href="https://github.com/mrvollger/SafFire">
+            <img
+            src="SafFire_logo.svg"
+            alt="triangle with all three sides equal"
+            height="50"
+            width="60"
+            />
+            <br> 
+            View on GitHub
+        </a>
+      </label>
+      <!-- Initialize a select button -->
+      <label class="custom-file-upload">
         <b>Select target and query genome</b>
         <br />
         <select id="targetGenome"></select>
@@ -131,35 +144,22 @@
       </label>
       <!-- Initialize a select button -->
       <label class="custom-file-upload">
-        Click to load your own data
+        Load alignment data
         <br />
         <a href="https://github.com/mrvollger/SafFire#how-to-prepare-your-genome-alignment-for-saffire">(How to make your own input)</a>
         <input type="file" id="uploader" />
       </label>
       <!-- Initialize a select button -->
       <label class="custom-file-upload">
-        Click to load your own bed9 data
-        <br />
-        for the reference
+        Load bed9 data for the target
         <input type="file" id="uploaderbed" />
+        <br><br>
       </label>
-      <!-- Initialize a select button -->
       <label class="custom-file-upload">
-        Click to load your own bed9 data 
-        <br />
-        for the query
+        Load bed9 data for the query
         <input type="file" id="uploaderquerybed" />
       </label>
-      <!-- Initialize a select button -->
-      <label class="custom-file-upload">
-        <img
-          src="SafFire_logo.svg"
-          alt="triangle with all three sides equal"
-          height="70"
-          width="100"
-        />
-      </label>
-      <!-- Initialize a select button -->
+     <!-- Initialize a select button -->
       <label class="custom-file-upload">
         Add <b>UCSC</b> snapshot
         <br />

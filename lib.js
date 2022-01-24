@@ -158,11 +158,11 @@ function create_table(data) {
     l_aln_data = data.map(function (d) {
         var id = d.perID_by_events;
         if (id == "NA" | id == "0" | id == "") {
-            id = "100";
+            id = "100.0";
         }
         m = +d.matches; mm = +d.mismatches;
         if (m + mm < 1) {
-            id = "0"
+            id = "0.0"
         }
 
         return {
@@ -211,10 +211,7 @@ function add_to_bed_contig_name(data, addition) {
             en: en,
             name: d.name,
             strand: strand,
-            tst: d.tst,
-            ten: d.ten,
             color: d.color,
-            b_ct: d.b_ct,
             b_st: d.b_st,
             b_sz: d.b_sz,
             file: d.file,
@@ -251,11 +248,12 @@ function create_bed9(data, bed_file, is_query) {
             st: +d.st,
             en: +d.en,
             name: d.name,
+            //score: +d.score,
             strand: d.strand,
-            tst: +d.tst,
-            ten: +d.ten,
+            //tst: +d.tst,
+            //ten: +d.ten,
             color: d.color,
-            b_ct: +d.b_ct,
+            //b_ct: +d.b_ct,
             b_st: split_bed_blocks(d.b_st),
             b_sz: split_bed_blocks(d.b_sz),
             file: bed_file,
@@ -283,8 +281,8 @@ function create_bed9(data, bed_file, is_query) {
             .domain(keys)
             .range([0, space_for_bed]);
     }
-    allow_bed_to_load();
-    //change_contigs();
+    //allow_bed_to_load();
+    change_contigs();
 };
 
 // this function check for bed files that exist for these references and loads them in
@@ -411,7 +409,7 @@ function parse_url_change() {
     if (ref != REF || query != QUERY) {
         REF = ref;
         QUERY = query;
-        var tbl_file = ALIGNMENTS[REF + QUERY]//`datasets/alignment-tables/${QUERY}_to_${REF}.tbl`
+        var tbl_file = ALIGNMENTS[REF + QUERY]
         d3.tsv(tbl_file)
             .then(function (d) {   // Handle the resolved Promise
                 return create_table(d);
@@ -702,4 +700,24 @@ function bed_path(path, d, div) {
                 .duration(0)
                 .style("opacity", 0);
         })
+}
+
+
+function change_contigs() {
+    var sel = document.getElementById('targetButton');
+    t_name = sel.options[sel.selectedIndex].value;
+    var sel = document.getElementById('queryButton');
+    q_name = sel.options[sel.selectedIndex].value
+
+    console.log("selected option query:" + q_name);
+    console.log("selected option target:" + t_name);
+
+    d3.selectAll("svg").remove();
+    d3.selectAll('.coordinates').remove();
+    // filter for contig of interest! 
+    var aln_data = l_aln_data.filter(function (e) {
+        return e.c1_nm == t_name //&& e.c2_nm == q_name;
+    });
+    clean_hover_text();
+    miropeats_d3(aln_data)
 }

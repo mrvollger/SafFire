@@ -1,0 +1,18 @@
+[package]
+authors = ["Mitchell R. Vollger <mrvollger@gmail.com>"]
+description = "A sample project with wasm-pack"
+edition = "2021"
+license = "MIT/Apache-2.0"
+name = "saffire"
+repository = "https://github.com/mrvollger/SafFire"
+version = "0.1.0"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+rayon = "1.5"
+serde = {version = "1.0", features = ["derive"]}
+serde-wasm-bindgen = "0.4.2"
+serde_derive = "1.0.80"
+wasm-bindgen = {version = "0.2", features = ["serde-serialize"]}

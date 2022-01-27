@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/365926796.svg)](https://zenodo.org/badge/latestdoi/365926796)
+
 # [SafFire](https://mrvollger.github.io/SafFire/)
 
 [SafFire](https://mrvollger.github.io/SafFire/) is an interactive tool for visualizing Miropeats genome wise.

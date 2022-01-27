@@ -1,7 +1,8 @@
 temp/**
 .DS_store
-
+/make_window_images
 
 # Added by cargo
 
 /target
+

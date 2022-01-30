@@ -1,6 +1,7 @@
 file,query,ref
 datasets/alignment-tables/GRCh38_to_CHM13_v1.1.tbl,GRCh38,CHM13_v1.1
 datasets/alignment-tables/CHM1_to_CHM13_v1.1.tbl,CHM1,CHM13_v1.1
+datasets/alignment-tables/CHM1_2.bed,CHM1_2,CHM13_v1.1
 datasets/HPRC/HG002_1.bed,HG002_1,CHM13_v1.1
 datasets/HPRC/HG002_2.bed,HG002_2,CHM13_v1.1
 datasets/HPRC/HG00438_1.bed,HG00438_1,CHM13_v1.1

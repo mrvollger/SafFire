@@ -40,7 +40,7 @@ function miropeats_d3(data) {
         .attr("viewBox", `0 0 ${width} ${height + added_height}`) // top, left, width, down
 
     max_len = d3.max(aln_data, function (d) {
-        return d3.max([d.c1_len, d.c2_en + 1e6])
+        return d3.max([d.c1_len, d.c2_en + 1e6 + get_offset_for_query(d.c2_nm, c2_offset)])
     });
     // target xscale inital x scale
     xscale = d3.scaleLinear()

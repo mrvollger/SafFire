@@ -78,15 +78,13 @@ d3.csv("datasets/metadata.csv").then(function (data) {
         T_GENOMES.add(d.ref);
     });
     genome_selector();
+}).then(function () {
+    var tbl_file = ALIGNMENTS[REF + QUERY]
+    d3.tsv(tbl_file)
+        .then(function (d) {   // Handle the resolved Promise
+            return create_table(d);
+        });
 });
-
-// load in the t2t alignments as default 
-var tbl_file = `datasets/alignment-tables/${QUERY}_to_${REF}.tbl`
-d3.tsv(tbl_file)
-    .then(function (d) {   // Handle the resolved Promise
-        return create_table(d);
-    });
-
 var queryButton = d3.select("#queryButton");
 var targetButton = d3.select("#targetButton");
 

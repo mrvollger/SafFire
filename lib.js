@@ -1,4 +1,12 @@
 
+function get_offset_for_query(c2_nm, c2_offset) {
+    var offset = 0;
+    if (c2_offset.hasOwnProperty(c2_nm)) {
+        offset = c2_offset[c2_nm]
+    }
+    return offset;
+}
+
 function get_url_elm(tag) {
     const parsedHash = new URLSearchParams(
         window.location.hash.substr(1) // skip the first char (#)
@@ -9,8 +17,16 @@ function get_url_elm(tag) {
 }
 
 function set_default_hash() {
-    window.location.hash = "#ref=CHM13_v1.1&query=CHM1";
-    window.location.hash = "#ref=CHM13_v1.1&query=GRCh38";
+    if (window.location.hash == "") {
+        window.location.hash = "#ref=CHM13_v1.1&query=CHM1";
+        window.location.hash = "#ref=CHM13_v1.1&query=GRCh38";
+    } else {
+        const parsedHash = new URLSearchParams(
+            window.location.hash.substr(1) // skip the first char (#)
+        );
+        REF = parsedHash.get("ref");
+        QUERY = parsedHash.get("query");
+    }
 }
 
 function set_user_hash() {

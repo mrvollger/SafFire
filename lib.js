@@ -495,7 +495,11 @@ function filter_query_button_by_target(target_name) {
     var uniq_q = order_q_names(filtered);
     // uniq_q.reverse();
     // var uniq_q = [...new Set(filtered.map(d => d.c2_nm))];
-    uniq_q.push("All");
+    if (uniq_q.length <= 30) {
+        uniq_q.unshift("All");
+    } else {
+        uniq_q.push("All");
+    }
     d3.selectAll('.coordinates').remove();
     // remove options previously in the q selector
     d3.selectAll("#queryButton").selectAll("option").remove()

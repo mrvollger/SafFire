@@ -84,6 +84,8 @@ d3.csv("datasets/metadata.csv").then(function (data) {
         .then(function (d) {   // Handle the resolved Promise
             return create_table(d);
         });
+}).then(function () {
+    read_in_bed9_defaults();
 });
 var queryButton = d3.select("#queryButton");
 var targetButton = d3.select("#targetButton");

@@ -28,7 +28,6 @@ function miropeats_d3(data) {
         var tmp_bed9_data = bed9_data[key].filter(function (d) {
             return d.ct == t_name || cur_q_names.includes(d.ct);
         });
-        //tmp_bed9_data.sort((b, a) => (a.en - a.st) - (b.en - b.st));
         cur_bed9_data[key] = tmp_bed9_data;
     }
 
@@ -441,7 +440,7 @@ function miropeats_d3(data) {
             zoom_bed_9 = tmp_bed9_data.filter(function (d) {
                 return (
                     (d.ct == t_name && d.en >= st && d.st <= en) ||
-                    (d.en + c2_offset[d.ct] + 1e6 >= st && d.st - c2_offset[d.ct] - 1e6 <= en)
+                    (d.en + c2_offset[d.ct] + 2e6 >= st && d.st - c2_offset[d.ct] - 2e6 <= en)
                 ) &&
                     (d.en - d.st > (en - st) / 3000); // make sure it is not too small (1px on 4k screen)
             });

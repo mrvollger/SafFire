@@ -438,9 +438,11 @@ function miropeats_d3(data) {
         for (var key in cur_bed9_data) {
             var tmp_bed9_data = cur_bed9_data[key];
             zoom_bed_9 = tmp_bed9_data.filter(function (d) {
-                return ((d.ct == t_name && d.en >= st && d.st <= en)
-                    || (d.en + c2_offset[d.ct] >= st && d.st + c2_offset[d.ct] <= en))
-                    && (d.en - d.st > (en - st) / 4000); // make sure it is not too small (1px on 4k screen)
+                return (
+                    (d.ct == t_name && d.en >= st && d.st <= en) ||
+                    (d.en + c2_offset[d.ct] >= st && d.st - c2_offset[d.ct] <= en)
+                ) &&
+                    (d.en - d.st > (en - st) / 4000); // make sure it is not too small (1px on 4k screen)
             });
             if (zoom_bed_9.length < MAX_BED_ITEMS) {
                 container.selectAll('g.item2')

@@ -285,8 +285,15 @@ function create_bed9(data, bed_file, is_query) {
     bed9_data[bed_file] = tmp_bed9_data;
 
     // bed data scale/offset
+    var other_keys = Object.keys(bed9_data)
+        .filter(key => bed9_data[key][0].is_query != is_query);
     var keys = Object.keys(bed9_data)
         .filter(key => bed9_data[key][0].is_query == is_query);
+    // make the bed rows the same height
+    for (i = 0; i < other_keys.length - keys.length + 1; i++) {
+        keys.push(other_keys[i]);
+    }
+    // make the bed yscales
     console.log(`KEYS FOR BED FILES ${is_query}`, keys);
     if (is_query) {
         bed_yscale_mod_query = d3.scaleBand()
@@ -310,6 +317,7 @@ function read_in_bed9_defaults() {
             `datasets/${REF}/${REF}_CenSat.bed`,
             `datasets/${REF}/${REF}_dupmasker_colors.bed`,
             `datasets/${REF}/${REF}_genes_small.bed`,
+            `datasets/${REF}/${REF}_gaps.bed`,
         ],
         query: [
             `datasets/${QUERY}/${QUERY}_dupmasker_colors.bed`,

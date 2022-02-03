@@ -28,7 +28,7 @@ function miropeats_d3(data) {
         var tmp_bed9_data = bed9_data[key].filter(function (d) {
             return d.ct == t_name || cur_q_names.includes(d.ct);
         });
-        tmp_bed9_data.sort((b, a) => (a.en - a.st) - (b.en - b.st));
+        //tmp_bed9_data.sort((b, a) => (a.en - a.st) - (b.en - b.st));
         cur_bed9_data[key] = tmp_bed9_data;
     }
 

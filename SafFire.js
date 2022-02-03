@@ -440,17 +440,19 @@ function miropeats_d3(data) {
             zoom_bed_9 = tmp_bed9_data.filter(function (d) {
                 return (
                     (d.ct == t_name && d.en >= st && d.st <= en) ||
-                    (d.en + c2_offset[d.ct] >= st && d.st - c2_offset[d.ct] <= en)
+                    (d.en + c2_offset[d.ct] + 1e6 >= st && d.st - c2_offset[d.ct] - 1e6 <= en)
                 ) &&
-                    (d.en - d.st > (en - st) / 6000); // make sure it is not too small (1px on 4k screen)
+                    (d.en - d.st > (en - st) / 3000); // make sure it is not too small (1px on 4k screen)
             });
             if (zoom_bed_9.length < MAX_BED_ITEMS) {
-                container.selectAll('g.item2')
-                    .data(zoom_bed_9)
-                    .enter()
-                    .each(draw_bed)
-                    .selectAll('path')
+                zoom_bed_9 = zoom_bed_9.slice(0, MAX_BED_ITEMS);
             }
+            container.selectAll('g.item2')
+                .data(zoom_bed_9)
+                .enter()
+                .each(draw_bed)
+                .selectAll('path')
+
         }
 
     };

@@ -282,6 +282,9 @@ function create_bed9(data, bed_file, is_query) {
         tmp_bed9_data = tmp_bed9_data.concat(minus, plus);
     }
     console.log("FIRST LINE OF NEW BED DATA", tmp_bed9_data[0]);
+    // this sorts the data by size so we can show
+    // the largest blocks first
+    tmp_bed9_data.sort((b, a) => (a.en - a.st) - (b.en - b.st));
     bed9_data[bed_file] = tmp_bed9_data;
 
     // bed data scale/offset

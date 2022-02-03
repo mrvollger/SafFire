@@ -311,7 +311,7 @@ function create_bed9(data, bed_file, is_query) {
 };
 
 function updated_current_bed_data() {
-    var cur_q_names = [...new Set(l_aln_data.map(d => d.c2_nm))];
+    var cur_q_names = [...new Set(last_used_aln_data.map(d => d.c2_nm))];
     cur_bed9_data = {};
     for (var key in bed9_data) {
         var tmp_bed9_data = bed9_data[key].filter(function (d) {
@@ -478,7 +478,7 @@ function parse_url_change() {
         var x0 = st - 1;
         console.log(`x0: ${x0}    x1: ${x1} maxlen: ${max_len}`);
         container.call(zoom).transition()
-            .duration(2000)
+            .duration(4000)
             .call(
                 zoom.transform,
                 d3.zoomIdentity
@@ -759,10 +759,10 @@ function change_contigs() {
     d3.selectAll("svg").remove();
     d3.selectAll('.coordinates').remove();
     // filter for contig of interest! 
-    var aln_data = l_aln_data.filter(function (e) {
+    last_used_aln_data = l_aln_data.filter(function (e) {
         return e.c1_nm == t_name //&& e.c2_nm == q_name;
     });
     clean_hover_text();
-    miropeats_d3(aln_data)
+    miropeats_d3(last_used_aln_data);
     parse_url_change();
 }

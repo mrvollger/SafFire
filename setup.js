@@ -27,7 +27,6 @@ var draw_bed = function (d) { }
 var draw_data = function (d) { }
 var zoom = function (d) { }
 var miropeats_d3 = function (d) { };
-
 var l_aln_data = [
     {
         c1_nm: "Chr 1", c1_st: 0, c1_en: 100, c1_len: 1000,
@@ -36,6 +35,7 @@ var l_aln_data = [
         id: "90",
     },
 ];
+var last_used_aln_data = l_aln_data;
 var bed9_data = {
     "datasets/CenSat.bed": [
         { ct: "chr1", st: 0, en: 500, name: "Acro1", score: 500, strand: "+", tst: 0, ten: 500, color: "200,0,0", file: 1 },

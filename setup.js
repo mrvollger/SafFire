@@ -22,7 +22,9 @@ var QUERY = get_url_elm("query");
 var targetGenome = d3.select("#targetGenome");
 var queryGenome = d3.select("#queryGenome");
 var space_for_bed = 20.0;
+var cur_bed9_data = {};
 var draw_bed = function (d) { }
+var draw_data = function (d) { }
 var zoom = function (d) { }
 var miropeats_d3 = function (d) { };
 

@@ -305,10 +305,21 @@ function create_bed9(data, bed_file, is_query) {
             .domain(keys)
             .range([0, space_for_bed]);
     }
-
     // load the changes
-    change_contigs();
+    // change_contigs();
+    updated_current_bed_data();
 };
+
+function updated_current_bed_data() {
+    var cur_q_names = [...new Set(l_aln_data.map(d => d.c2_nm))];
+    cur_bed9_data = {};
+    for (var key in bed9_data) {
+        var tmp_bed9_data = bed9_data[key].filter(function (d) {
+            return d.ct == t_name || cur_q_names.includes(d.ct);
+        });
+        cur_bed9_data[key] = tmp_bed9_data;
+    }
+}
 
 // this function check for bed files that exist for these references and loads them in
 function read_in_bed9_defaults() {

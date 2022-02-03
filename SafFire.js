@@ -518,8 +518,8 @@ async function run() {
     // overflows if more than ~1345 elements. 
     console.log(
         "REAL RUST CODE " +
-        await mmstats(l_aln_data.slice(0, 1300))
+        await mmstats(l_aln_data.slice(0, 100))
     );
 }
-run();
-
+//run();
+change_contigs();

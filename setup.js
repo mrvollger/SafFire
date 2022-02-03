@@ -15,7 +15,6 @@ var added_height = 0;
 var width = Math.round(800 * scale);
 var container = "";
 var max_len = "";
-var zoom = "";
 var MAX_BED_ITEMS = 500;
 var BED_COUNT = 1;
 var REF = get_url_elm("ref");
@@ -24,6 +23,7 @@ var targetGenome = d3.select("#targetGenome");
 var queryGenome = d3.select("#queryGenome");
 var space_for_bed = 20.0;
 var draw_bed = function (d) { }
+var zoom = function (d) { }
 var miropeats_d3 = function (d) { };
 
 var l_aln_data = [
@@ -86,6 +86,8 @@ d3.csv("datasets/metadata.csv").then(function (data) {
         });
 }).then(function () {
     read_in_bed9_defaults();
+}).then(function () {
+    change_contigs();
 });
 var queryButton = d3.select("#queryButton");
 var targetButton = d3.select("#targetButton");

@@ -198,9 +198,7 @@ function create_table(data) {
     svg.selectAll("*").remove();
     new_target_selector(l_aln_data);
     genome_selector();
-    //miropeats_d3(l_aln_data);
     change_contigs();
-    parse_url_change();
 };
 
 function add_to_bed_contig_name(data, addition) {
@@ -307,7 +305,8 @@ function create_bed9(data, bed_file, is_query) {
             .domain(keys)
             .range([0, space_for_bed]);
     }
-    //allow_bed_to_load();
+
+    // load the changes
     change_contigs();
 };
 
@@ -334,7 +333,7 @@ function read_in_bed9_defaults() {
             d3.tsv(bed_file)
                 .then(function (d) {   // Handle the resolved Promise
                     return create_bed9(d, bed_file, key == "query");
-                });
+                })
             /*
             d3.text(bed_file, function (text) {
                 data = d3.csvParseRows(text);
@@ -444,11 +443,14 @@ function parse_url_change() {
         read_in_bed9_defaults();
     }
 
+    //
     var max_bed_items = parsedHash.get("max_bed_items");
     if (max_bed_items != null && max_bed_items != MAX_BED_ITEMS) {
         MAX_BED_ITEMS = max_bed_items;
         draw_bed();
     }
+
+    //
     if (parsedHash.get("pos") != null) {
         var x0 = 1e6; var x1 = x0 + 2e7;
         [chrm, pos] = parsedHash.get("pos").split(":");
@@ -674,7 +676,7 @@ function update_genomes() {
     window.location.hash = `#ref=${target}&query=${query}`;
     console.log("genome selection:" + target + " " + query);
 
-    allow_bed_to_load()
+    change_contigs();
 }
 
 
@@ -751,4 +753,5 @@ function change_contigs() {
     });
     clean_hover_text();
     miropeats_d3(aln_data)
+    parse_url_change();
 }

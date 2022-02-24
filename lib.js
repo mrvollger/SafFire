@@ -18,14 +18,15 @@ function get_url_elm(tag) {
 
 function set_default_hash() {
     if (window.location.hash == "") {
-        window.location.hash = "#ref=CHM13_v1.1&query=CHM1";
-        window.location.hash = "#ref=CHM13_v1.1&query=GRCh38";
+        window.location.hash = "#dataset=default&ref=CHM13_v1.1&query=CHM1";
+        window.location.hash = "#dataset=default&ref=CHM13_v1.1&query=GRCh38";
     } else {
         const parsedHash = new URLSearchParams(
             window.location.hash.substr(1) // skip the first char (#)
         );
         REF = parsedHash.get("ref");
         QUERY = parsedHash.get("query");
+        CUR_DATASET = parsedHash.get("dataset");
     }
 }
 
@@ -442,10 +443,12 @@ function parse_url_change() {
     // check if ref or query updated
     var ref = parsedHash.get("ref");
     var query = parsedHash.get("query");
-    if (ref != REF || query != QUERY) {
+    var dataset = parsedHash.get("dataset");
+    if (ref != REF || query != QUERY || dataset != CUR_DATASET) {
         REF = ref;
         QUERY = query;
-        var tbl_file = ALIGNMENTS[REF + QUERY]
+        CUR_DATASET = dataset;
+        var tbl_file = ALIGNMENTS[CUR_DATASET + REF + QUERY]
         d3.tsv(tbl_file)
             .then(function (d) {   // Handle the resolved Promise
                 return create_table(d);
@@ -473,33 +476,33 @@ function parse_url_change() {
             // update the drawings
             change_contigs();
         }
-        [st, x1] = pos.split("-");
-        var x0 = st - 1;
-        console.log(`x0: ${x0}    x1: ${x1} maxlen: ${max_len}`);
-        container.call(zoom).transition()
-            .duration(4000)
-            .call(
-                zoom.transform,
-                d3.zoomIdentity
-                    .translate((width) / 2, height / 2)
-                    .scale((max_len) / (x1 - x0))
-                    .translate(-(xscale(x0) + xscale(x1)) / 2, height)
-            )
-            .on("end", function () {
-                if (parsedHash.get("save") != null) {
-                    save_svg();
-                }
-            });
-    }
-    else if (parsedHash.get("save") != null) {
-        save_svg();
-    }
-    if (parsedHash.get("view") != null) {
-        view_svg();
+        if (pos !== undefined && pos.split("-").length > 1) {
+            [st, x1] = pos.split("-");
+            var x0 = st - 1;
+            console.log(`x0: ${x0}    x1: ${x1} maxlen: ${max_len}`);
+            container.call(zoom).transition()
+                .duration(4000)
+                .call(
+                    zoom.transform,
+                    d3.zoomIdentity
+                        .translate((width) / 2, height / 2)
+                        .scale((max_len) / (x1 - x0))
+                        .translate(-(xscale(x0) + xscale(x1)) / 2, height)
+                )
+                .on("end", function () {
+                    if (parsedHash.get("save") != null) {
+                        save_svg();
+                    }
+                });
+        } else if (parsedHash.get("save") != null) {
+            save_svg();
+        }
+
+        if (parsedHash.get("view") != null) {
+            view_svg();
+        }
     }
 }
-
-
 
 // UCSC reload button
 function reload() {
@@ -675,9 +678,17 @@ function genome_selector() {
 
     // set the right defaults 
     var element = document.getElementById("targetGenome");
-    element.value = REF;
+    if (t_genomes.includes(REF)) {
+        element.value = REF;
+    } else {
+        element.value = t_genomes[0];
+    }
     var element = document.getElementById("queryGenome");
-    element.value = QUERY;
+    if (q_genomes.includes(QUERY)) {
+        element.value = QUERY;
+    } else {
+        element.value = q_genomes[0];
+    }
 }
 
 
@@ -711,8 +722,11 @@ function update_genomes() {
     var sel = document.getElementById('queryGenome');
     var query = sel.options[sel.selectedIndex].value
 
+    var sel = document.getElementById('datasetGenomes');
+    var dataset = sel.options[sel.selectedIndex].value
+
     // update the  hash
-    window.location.hash = `#ref=${target}&query=${query}`;
+    window.location.hash = `#dataset=${dataset}&ref=${target}&query=${query}`;
     console.log("genome selection:" + target + " " + query);
 
     change_contigs();

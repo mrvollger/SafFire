@@ -19,6 +19,7 @@ var MAX_BED_ITEMS = 500;
 var BED_COUNT = 1;
 var REF = get_url_elm("ref");
 var QUERY = get_url_elm("query");
+var CUR_DATASET = get_url_elm("dataset");
 var targetGenome = d3.select("#targetGenome");
 var queryGenome = d3.select("#queryGenome");
 var datasetGenomes = d3.select("#datasetGenomes");
@@ -77,10 +78,9 @@ var Q_GENOMES = new Set();
 var T_GENOMES = new Set();
 var DATASETS = {};
 var DATASET_NAMES = new Set();
-var CUR_DATASET = "default";
 d3.csv("datasets/metadata.csv").then(function (data) {
     data.forEach(function (d) {
-        ALIGNMENTS[d.ref + d.query] = d.file;
+        ALIGNMENTS[d.dataset + d.ref + d.query] = d.file;
         Q_GENOMES.add(d.query);
         T_GENOMES.add(d.ref);
         if (!(d.dataset in DATASETS)) {
@@ -94,7 +94,7 @@ d3.csv("datasets/metadata.csv").then(function (data) {
     });
 }).then(function () {
     console.log("DATASETS: " + DATASETS);
-    var tbl_file = ALIGNMENTS[REF + QUERY]
+    var tbl_file = ALIGNMENTS[CUR_DATASET + REF + QUERY]
     d3.tsv(tbl_file)
         .then(function (d) {   // Handle the resolved Promise
             return create_table(d);
@@ -142,4 +142,6 @@ datasetGenomes.on("change", function (d) {
     var element = document.getElementById("datasetGenomes");
     CUR_DATASET = element.value;
     genome_selector();
+    update_genomes();
+    change_contigs();
 });

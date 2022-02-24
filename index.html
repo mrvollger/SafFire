@@ -30,10 +30,10 @@
       display: none;
     }
     .header {
-      position: sticky;
+      /*position: sticky;*/
       top: 0;
       margin: 0;
-      height: 75px;
+      height: 80px;
       z-index: 9999;
       width: 100%;
       vertical-align: middle;
@@ -43,7 +43,7 @@
     }
     .custom-file-upload {
       margin: auto;
-      width: 10%;
+      width: 12%;
       vertical-align: middle;
       font: 12px sans-serif;
       text-align: center;
@@ -55,17 +55,12 @@
       display: inline-block;
       /*position: relative;*/
       position: sticky;
-      top: 0;
-      vertical-align: top;
     }
     .svg-content-responsive {
-      vertical-align: top;
       display: inline-block;
       /*position: absolute;*/
       width: 98%;
       position: sticky;
-      top: 0;
-      left: 0;
     }
     div.tooltip {
       position: absolute;
@@ -100,7 +95,6 @@
     }
     #chart svg {
       position: sticky;
-      top: 0;
       margin: auto;
       max-width: 95%;
       display: block;
@@ -108,7 +102,6 @@
     }
     .chart {
       position: sticky;
-      top: 0;
       margin: auto;
       max-width: 98%;
       display: block;
@@ -133,7 +126,7 @@
       </label>
       <!-- Initialize a select button -->
       <label class="custom-file-upload">
-        <b>Select data subset</b>
+        <b>Select alignment dataset</b>
         <br />
         <select id="datasetGenomes"></select>
         <br />
@@ -161,10 +154,11 @@
       <label class="custom-file-upload">
         Load bed9 data for the target
         <input type="file" id="uploaderbed" />
-      </label>
-      <label class="custom-file-upload">
+        <br />
+        <br />
         Load bed9 data for the query
         <input type="file" id="uploaderquerybed" />
+        <br />
       </label>
      <!-- Initialize a select button -->
       <label class="custom-file-upload">
@@ -220,8 +214,6 @@
       </script>
     </div>
 
-    <!-- Create a div where the graph will take place -->
-    <canvas id="my_dataviz" width="400" height="400"></canvas>
 
     <div id="browser-container">
       <img id="browser-img" class="browser-img" />
@@ -230,7 +222,6 @@
       <img id="browser-url" class="browser-url" />
     </div>
 
-    <div id="chart2"></div>
 
   </body>
 </html>

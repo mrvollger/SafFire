@@ -21,6 +21,7 @@ var REF = get_url_elm("ref");
 var QUERY = get_url_elm("query");
 var targetGenome = d3.select("#targetGenome");
 var queryGenome = d3.select("#queryGenome");
+var datasetGenomes = d3.select("#datasetGenomes");
 var space_for_bed = 20.0;
 var cur_bed9_data = {};
 var draw_bed = function (d) { }
@@ -70,22 +71,35 @@ const forward_color = "#2081f9";
 const reverse_color = "#f99820";
 var ALIGNMENTS = {};
 
+
 // load in the metadata
 var Q_GENOMES = new Set();
 var T_GENOMES = new Set();
+var DATASETS = {};
+var DATASET_NAMES = new Set();
+var CUR_DATASET = "default";
 d3.csv("datasets/metadata.csv").then(function (data) {
     data.forEach(function (d) {
         ALIGNMENTS[d.ref + d.query] = d.file;
         Q_GENOMES.add(d.query);
         T_GENOMES.add(d.ref);
+        if (!(d.dataset in DATASETS)) {
+            DATASETS[d.dataset] = { ref: new Set(), query: new Set() };
+            console.log("ADDED DATASET: " + DATASETS[d.dataset]);
+            console.log(DATASETS)
+        }
+        DATASET_NAMES.add(d.dataset);
+        DATASETS[d.dataset].ref.add(d.ref);
+        DATASETS[d.dataset].query.add(d.query);
     });
-    genome_selector();
 }).then(function () {
+    console.log("DATASETS: " + DATASETS);
     var tbl_file = ALIGNMENTS[REF + QUERY]
     d3.tsv(tbl_file)
         .then(function (d) {   // Handle the resolved Promise
             return create_table(d);
         });
+    dataset_selector();
 }).then(function () {
     read_in_bed9_defaults();
 }).then(function () {
@@ -120,4 +134,12 @@ queryGenome.on("change", function (d) {
     update_genomes();
 });
 
+
 new_target_selector(l_aln_data);
+
+datasetGenomes.on("change", function (d) {
+    //update_genomes();
+    var element = document.getElementById("datasetGenomes");
+    CUR_DATASET = element.value;
+    genome_selector();
+});

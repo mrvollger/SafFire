@@ -197,7 +197,6 @@ function create_table(data) {
     var svg = d3.select("#" + chart_name);
     svg.selectAll("*").remove();
     new_target_selector(l_aln_data);
-    genome_selector();
     change_contigs();
 };
 
@@ -264,7 +263,6 @@ function create_bed9(data, bed_file, is_query) {
             name: d.name,
             //score: +d.score,
             strand: d.strand,
-            //tst: +d.tst,
             //ten: +d.ten,
             color: d.color,
             //b_ct: +d.b_ct,
@@ -558,7 +556,8 @@ function filter_query_button_by_target(target_name) {
 
 function new_target_selector(new_data) {
     // remove previous selections 
-    d3.selectAll("option").remove()
+    d3.selectAll("#targetButton").selectAll("option").remove()
+    d3.selectAll("#queryButton").selectAll("option").remove()
     d3.selectAll('.coordinates').remove();
 
     // add the options to the button
@@ -644,22 +643,31 @@ function save_svg() {
 
 // genome selectors
 function genome_selector() {
+    console.log("DATASETS: " + DATASETS);
+    console.log("CUR_DATASET: " + CUR_DATASET);
     // log the genomes 
-    console.log("TARGET GENOMES: " + T_GENOMES);
+    var t_genomes = T_GENOMES;
+    var t_genomes = Array.from(DATASETS[CUR_DATASET]["ref"]);
+    var q_genomes = Q_GENOMES;
+    var q_genomes = Array.from(DATASETS[CUR_DATASET].query);
+
+    console.log("TARGET GENOMES: ")
+    console.log(t_genomes);
     d3.selectAll("#targetGenome").selectAll("option").remove();
     targetGenome
         .selectAll('#targetGenome')
-        .data(T_GENOMES)
+        .data(t_genomes)
         .enter()
         .append('option')
         .text(function (d) { return d; }) // text showed in the menu
         .attr("value", function (d) { return d; });
 
-    console.log("QUERY GENOMES: " + Q_GENOMES);
+    console.log("QUERY GENOMES: ");
+    console.log(q_genomes);
     d3.selectAll("#queryGenome").selectAll("option").remove();
     queryGenome
         .selectAll('#queryGenome')
-        .data(Q_GENOMES)
+        .data(q_genomes)
         .enter()
         .append('option')
         .text(function (d) { return d; }) // text showed in the menu
@@ -670,10 +678,29 @@ function genome_selector() {
     element.value = REF;
     var element = document.getElementById("queryGenome");
     element.value = QUERY;
-
-    //let element = document.getElementById('targetButton');
-
 }
+
+
+function dataset_selector() {
+    // log the genomes 
+    // datasets = ["default", "HPRC", "NHP"]
+    //
+    datasets = Array.from(DATASET_NAMES);
+    d3.selectAll("#datasetGenomes").selectAll("option").remove();
+    datasetGenomes
+        .selectAll('#datasetGenomes')
+        .data(datasets)
+        .enter()
+        .append('option')
+        .text(function (d) { return d; }) // text showed in the menu
+        .attr("value", function (d) { return d; });
+
+    // set the right defaults 
+    var element = document.getElementById("datasetGenomes");
+    element.value = CUR_DATASET;
+    genome_selector();
+}
+
 
 function update_genomes() {
     clean_hover_text();

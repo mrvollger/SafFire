@@ -5,6 +5,7 @@ default,datasets/HPRC/T2T-CHM13v2_1.bed,T2T-CHM13v2_1,CHM13_v1.1
 default,datasets/alignment-tables/GRCh38_to_CHM13_v1.1.tbl,GRCh38,CHM13_v1.1
 default,datasets/alignment-tables/CHM1_to_CHM13_v1.1.tbl,CHM1,CHM13_v1.1
 default,datasets/alignment-tables/CHM1_2.bed,CHM1_2,CHM13_v1.1
+default,https://eichlerlab.gs.washington.edu/help/mvollger/share/SafFire/CHM1_1.bed,test1,test2
 HPRC,datasets/HPRC/HG002_1.bed,HG002_1,CHM13_v1.1
 HPRC,datasets/HPRC/HG002_2.bed,HG002_2,CHM13_v1.1
 HPRC,datasets/HPRC/HG00438_1.bed,HG00438_1,CHM13_v1.1
@@ -105,4 +106,6 @@ HPRC,datasets/HPRC/NA20129_1.bed,NA20129_1,CHM13_v1.1
 HPRC,datasets/HPRC/NA20129_2.bed,NA20129_2,CHM13_v1.1
 HPRC,datasets/HPRC/NA21309_1.bed,NA21309_1,CHM13_v1.1
 HPRC,datasets/HPRC/NA21309_2.bed,NA21309_2,CHM13_v1.1
-t2t-liftover,datasets/t2t-liftover-tables/chm13_vs_grch38_wfmash_p95s5k_31a.paf.SafFire.no_trim.bed,T2T-CHM13v2_1,GRCh38
+t2t-liftover,datasets/t2t-liftover-tables/grch38_masked-chm13v2-split.paf.SafFire.simple.bed,T2T-CHM13v2_1,GRCh38
+t2t-liftover,datasets/t2t-liftover-tables/grch38_masked-chm13v2-split.paf.SafFire.no_trim.bed,T2T-CHM13v2_1,GRCh38_10kbp_break
+t2t-liftover,datasets/t2t-liftover-tables/grch38_masked-chm13v2-split.paf.SafFire.trim.double.bed,T2T-CHM13v2_1,GRCh38_10kbp_break_and_trimmed

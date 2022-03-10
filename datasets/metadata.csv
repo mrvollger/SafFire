@@ -106,6 +106,5 @@ HPRC,datasets/HPRC/NA20129_1.bed,NA20129_1,CHM13_v1.1
 HPRC,datasets/HPRC/NA20129_2.bed,NA20129_2,CHM13_v1.1
 HPRC,datasets/HPRC/NA21309_1.bed,NA21309_1,CHM13_v1.1
 HPRC,datasets/HPRC/NA21309_2.bed,NA21309_2,CHM13_v1.1
-t2t-liftover,datasets/t2t-liftover-tables/grch38_masked-chm13v2-split.paf.SafFire.simple.bed,T2T-CHM13v2_1,GRCh38
-t2t-liftover,datasets/t2t-liftover-tables/grch38_masked-chm13v2-split.paf.SafFire.no_trim.bed,T2T-CHM13v2_1,GRCh38_10kbp_break
-t2t-liftover,datasets/t2t-liftover-tables/grch38_masked-chm13v2-split.paf.SafFire.trim.double.bed,T2T-CHM13v2_1,GRCh38_10kbp_break_and_trimmed
+t2t-liftover,datasets/t2t-liftover-tables/grch38_masked-chm13v2-split.paf.SafFire.trim.double.bed,T2T-CHM13v2_1,GRCh38
+t2t-liftover,datasets/t2t-liftover-tables/hg19-chm13v2.paf.SafFire.simple.bed,T2T-CHM13v2_1,hg19

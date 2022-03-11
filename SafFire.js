@@ -337,6 +337,7 @@ function miropeats_d3(data) {
         var st = Math.max(0, Math.round(xz.domain()[0]));
         var en = Math.min(aln_data[0].c1_len, Math.round(xz.domain()[1]));
         var coords = `${t_name}:${d3.format(",")(st + 1)}-${d3.format(",")(en)}`;
+        set_url_hash_elm("pos", `${t_name}:${st}-${en}`, false);
         d3.selectAll('.coordinates').remove();
         // define the coordinate box
         var coordinates = d3.select("body").append("div")

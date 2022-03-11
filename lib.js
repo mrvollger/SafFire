@@ -16,6 +16,19 @@ function get_url_elm(tag) {
     return val;
 }
 
+function set_url_hash_elm(tag, val, trigger_event = true) {
+    const parsedHash = new URLSearchParams(
+        window.location.hash.substr(1) // skip the first char (#)
+    );
+    parsedHash.set(tag, val);
+    var newHash = parsedHash.toString();
+    if (trigger_event) {
+        window.location.hash = newHash;
+    } else {
+        history.replaceState(null, null, document.location.pathname + '#' + newHash);
+    }
+}
+
 function set_default_hash() {
     if (window.location.hash == "") {
         window.location.hash = "#dataset=default&ref=CHM13_v1.1&query=CHM1";
@@ -31,7 +44,7 @@ function set_default_hash() {
 }
 
 function set_user_hash() {
-    window.location.hash = "#ref=USER_REF&query=USER_QUERY";
+    window.location.hash = "#dataset=USER&ref=USER_REF&query=USER_QUERY";
 }
 
 function sleep(ms) {

@@ -494,7 +494,7 @@ function parse_url_change() {
             var x0 = st - 1;
             console.log(`x0: ${x0}    x1: ${x1} maxlen: ${max_len}`);
             container.call(zoom).transition()
-                .duration(4000)
+                .duration(6000)
                 .call(
                     zoom.transform,
                     d3.zoomIdentity

@@ -124,3 +124,5 @@ NHP,datasets/NHP/Orangutan/chm13_v1.0_h1.paf.stats.bed,Orangutan_h1_Susie_PAB,CH
 NHP,datasets/NHP/Orangutan/chm13_v1.0_h2.paf.stats.bed,Orangutan_h2_Susie_PAB,CHM13_v1.0
 NHP,datasets/NHP/OWL_monkey/OWLmonkey_h1.paf.stats.bed,OWLmonkey_h1_86718_ANA,CHM13_v1.0
 NHP,datasets/NHP/OWL_monkey/OWLmonkey_h2.paf.stats.bed,OWLmonkey_h2_86718_ANA,CHM13_v1.0
+fiberseq,datasets/fiberseq/GM08714_1.bed,GM08714_1,CHM13_v1.1
+fiberseq,datasets/fiberseq/GM08714_2.bed,GM08714_2,CHM13_v1.1

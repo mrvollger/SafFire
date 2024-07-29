@@ -438,6 +438,7 @@ function miropeats_d3(data) {
         // draw bed9
         for (var key in cur_bed9_data) {
             var tmp_bed9_data = cur_bed9_data[key];
+            var few_enough = tmp_bed9_data.length < 100;
             zoom_bed_9 = tmp_bed9_data.filter(function (d) {
                 in_target = (d.ct == t_name) && (d.en >= st) && (d.st <= en);
                 in_query = (
@@ -446,7 +447,7 @@ function miropeats_d3(data) {
                         d.st - Math.abs(c2_offset[d.ct]) - 2e6 <= en
                     );
                 large_enough = (d.en - d.st) > ((en - st) / 3000);
-                return (in_target || in_query) && large_enough;
+                return (in_target || in_query) && (large_enough || few_enough);
             });
             if (zoom_bed_9.length < MAX_BED_ITEMS) {
                 zoom_bed_9 = zoom_bed_9.slice(0, MAX_BED_ITEMS);

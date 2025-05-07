@@ -130,5 +130,5 @@ fiberseq,datasets/fiberseq/GM12878v0.1.0_scaffold_1.bed,GM12878v0.1.0_1,GRCh38
 fiberseq,datasets/fiberseq/GM12878v0.1.0_scaffold_2.bed,GM12878v0.1.0_2,GRCh38
 fiberseq,datasets/fiberseq/T2Tv2.0/GM12878v0.1.0_scaffold_1.bed,GM12878v0.1.0_1,CHM13_v1.1
 fiberseq,datasets/fiberseq/T2Tv2.0/GM12878v0.1.0_scaffold_2.bed,GM12878v0.1.0_2,CHM13_v1.1
-fiberseq,datasets/fiberseq/T2Tv2.0/PS00401_hap1.bed,PS00401_hap1,CHM13_v1.1
-fiberseq,datasets/fiberseq/T2Tv2.0/PS00401_hap2.bed,PS00401_hap2,CHM13_v1.1
+fiberseq,datasets/fiberseq/T2Tv2.0/hap1_PS00401.bed,PS00401_hap1,CHM13_v1.1
+fiberseq,datasets/fiberseq/T2Tv2.0/hap2_PS00401.bed,PS00401_hap2,CHM13_v1.1
